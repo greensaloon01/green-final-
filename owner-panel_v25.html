@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08090d">
+<title>Green Salon — Owner Panel v24</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080c;--s1:#0e0f16;--s2:#161720;--s3:#1e1f2c;
+  --b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);
+  --acc:#22d3a8;--warn:#f59e0b;--danger:#f43f5e;--purple:#818cf8;--prod:#a78bfa;
+  --txt:#eeeef5;--muted:#6b6b8a;--dim:#9898b8;
+  --cash:#22d3a8;--online:#818cf8;--upi:#fb923c;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+
+/* LOGIN */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.lbox{background:var(--s1);border:1px solid var(--b);border-radius:22px;padding:44px 38px;width:100%;max-width:420px;text-align:center}
+.llogo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:4px}
+.llogo em{color:var(--acc);font-style:normal}
+.lsub{color:var(--muted);font-size:14px;margin-bottom:6px}
+.lver{color:var(--acc);font-size:11px;margin-bottom:28px;letter-spacing:1px}
+.llbl{display:block;text-align:left;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.linput{width:100%;padding:13px 15px;background:var(--s2);border:1px solid var(--b);border-radius:11px;color:var(--txt);font-size:15px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;transition:border-color .2s}
+.linput:focus{border-color:var(--acc)}.linput::placeholder{color:var(--muted)}
+.lbtn{width:100%;padding:15px;background:var(--acc);color:#07080c;border:none;border-radius:11px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.lbtn:hover{opacity:.9}.lbtn:active{opacity:.8}
+.lerr{color:var(--danger);font-size:13px;margin-top:10px;min-height:18px}
+.lfoot{font-size:10px;color:rgba(255,255,255,.06);margin-top:28px}
+
+/* LAYOUT */
+#app{display:none}
+.layout{display:flex;min-height:100vh}
+.side{width:224px;background:var(--s1);border-right:1px solid var(--b);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:50;overflow-y:auto;transition:width .2s}
+.side-top{padding:18px 16px 14px;border-bottom:1px solid var(--b)}
+.side-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800}
+.side-logo em{color:var(--acc);font-style:normal}
+.side-owner{font-size:11px;color:var(--muted);margin-top:2px}
+.side-role{display:inline-block;font-size:10px;color:var(--acc);background:rgba(34,211,168,.1);padding:1px 7px;border-radius:10px;margin-top:4px}
+.side-nav{padding:10px 8px;flex:1}
+.snav-sec{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:9px 8px 5px;margin-top:4px}
+.nl{display:flex;align-items:center;gap:9px;padding:9px 10px;color:var(--dim);font-size:13px;cursor:pointer;border-radius:9px;transition:all .12s;user-select:none;position:relative;white-space:nowrap}
+.nl:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+.nl.on{color:var(--acc);background:rgba(34,211,168,.09)}
+.nl svg{width:15px;height:15px;flex-shrink:0}
+.nl-badge{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.side-bot{padding:13px 16px;border-top:1px solid var(--b)}
+.logout{color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.logout:hover{color:var(--danger)}
+.content{margin-left:224px;padding:28px;min-height:100vh}
+.pg{display:none}.pg.on{display:block;animation:fi .16s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* PAGE HDR */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap}
+.ptitle{font-family:'Syne',sans-serif;font-size:23px;font-weight:700}
+.psub{font-size:13px;color:var(--muted);margin-top:3px}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 2s infinite;margin-left:6px;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* BUTTONS */
+.btn{padding:9px 17px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .12s;white-space:nowrap}
+.btn-acc{background:var(--acc);color:#07080c}.btn-acc:hover{opacity:.9}
+.btn-ghost{background:transparent;border:1px solid var(--b2);color:var(--dim)}.btn-ghost:hover{color:var(--txt);border-color:var(--b)}
+.btn-danger{background:rgba(244,63,94,.1);color:var(--danger);border:1px solid rgba(244,63,94,.22)}.btn-danger:hover{background:rgba(244,63,94,.2)}
+.btn-warn{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.22)}.btn-warn:hover{background:rgba(245,158,11,.2)}
+.btn-recover{background:rgba(34,211,168,.1);color:var(--acc);border:1px solid rgba(34,211,168,.22)}.btn-recover:hover{background:rgba(34,211,168,.2)}
+.btn-purple{background:rgba(129,140,248,.1);color:var(--purple);border:1px solid rgba(129,140,248,.22)}.btn-purple:hover{background:rgba(129,140,248,.2)}
+.btn-solid-danger{background:var(--danger);color:#fff}.btn-solid-danger:hover{opacity:.9}
+.btn-sm{padding:5px 12px;font-size:11px;border-radius:7px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.sc{background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:16px}
+.sc-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}
+.sc-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700}
+.sc-val.g{color:var(--acc)}.sc-val.y{color:var(--warn)}.sc-val.p{color:var(--purple)}.sc-val.pr{color:var(--prod)}.sc-val.r{color:var(--danger)}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:15px;overflow:hidden;margin-bottom:20px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.card-body{padding:18px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 18px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--b);font-weight:500}
+td{padding:11px 18px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.012)}
+.badge{display:inline-block;padding:2px 10px;border-radius:18px;font-size:11px;font-weight:600}
+.bc{background:rgba(34,211,168,.12);color:var(--cash)}
+.bo{background:rgba(129,140,248,.12);color:var(--online)}
+.bu{background:rgba(251,146,60,.12);color:var(--upi)}
+.flagged td{opacity:.35;text-decoration:line-through}
+.rt-dup{background:rgba(244,63,94,.12);color:var(--danger)}
+.rt-mis{background:rgba(245,158,11,.12);color:var(--warn)}
+.rt-cus{background:rgba(129,140,248,.12);color:var(--purple)}
+.st-pend{background:rgba(245,158,11,.12);color:var(--warn)}
+.st-res{background:rgba(34,211,168,.12);color:var(--acc)}
+.st-ign{background:rgba(107,107,138,.12);color:var(--muted)}
+
+/* BRANCH GRID */
+.branch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.bcard{background:var(--s1);border:1px solid var(--b);border-radius:18px;padding:20px;transition:all .14s;position:relative;overflow:hidden}
+.bcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--acc);opacity:0;transition:opacity .14s}
+.bcard-click{cursor:pointer}
+.bcard-click:hover{border-color:rgba(34,211,168,.3);transform:translateY(-2px)}
+.bcard-click:hover::before{opacity:1}
+.bcard-deleted{opacity:.55;border-style:dashed}
+.bcard-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px}
+.bcard-loc{font-size:12px;color:var(--muted);margin-bottom:14px}
+.bcard-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.bcs{background:var(--s2);border-radius:10px;padding:12px}
+.bcs-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.bcs-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--acc)}
+.bcard-actions{display:flex;gap:8px;flex-wrap:wrap}
+.bcard-foot{font-size:10px;color:var(--muted);margin-top:10px;display:flex;align-items:center;justify-content:space-between}
+.copy-id{cursor:pointer;padding:2px 8px;border:1px solid var(--b);border-radius:5px;color:var(--dim)}
+.copy-id:hover{color:var(--acc);border-color:var(--acc)}
+.deleted-tag{display:inline-block;padding:2px 9px;border-radius:6px;background:rgba(244,63,94,.12);color:var(--danger);font-size:11px;margin-bottom:10px}
+
+/* BREADCRUMB */
+.bc-nav{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);margin-bottom:18px;flex-wrap:wrap}
+.bc-link{cursor:pointer;color:var(--dim)}.bc-link:hover{color:var(--acc)}.bc-sep{opacity:.4}
+
+/* STAFF */
+.staff-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.04)}
+.staff-row:last-child{border-bottom:none}.staff-row:hover{background:rgba(255,255,255,.016)}
+.sav{width:38px;height:38px;border-radius:50%;background:var(--s2);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--acc);flex-shrink:0}
+.sinfo{flex:1;min-width:0}
+.sname{font-weight:600;font-size:13px}.smeta{font-size:11px;color:var(--muted);margin-top:2px}
+.sname-edit{display:none;flex:1}
+.sname-input{width:100%;padding:5px 10px;background:var(--s2);border:1px solid var(--acc);border-radius:7px;color:var(--txt);font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.sactions{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap}
+.comm-tgl{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.comm-input{width:54px;padding:3px 7px;background:var(--s2);border:1px solid var(--b);border-radius:5px;color:var(--txt);font-size:12px;text-align:center;outline:none}
+.comm-input:focus{border-color:var(--acc)}
+.tgl{width:40px;height:21px;background:var(--s2);border:1px solid var(--b2);border-radius:11px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tgl.on{background:var(--acc);border-color:var(--acc)}
+.tgl::after{content:'';position:absolute;width:15px;height:15px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .17s}
+.tgl.on::after{transform:translateX(19px)}
+.tgl-sm{width:34px;height:18px}.tgl-sm::after{width:12px;height:12px}.tgl-sm.on::after{transform:translateX(16px)}
+
+/* FORMS */
+.form-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;background:var(--s2);border:1px solid var(--b);border-radius:9px;color:var(--txt);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--acc)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field select option{background:var(--s2)}
+.tgl-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid var(--b);margin-top:7px}
+.tgl-lbl{font-size:13px}.tgl-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* SERVICE/PRODUCT TAGS */
+.svc-tags{display:flex;flex-wrap:wrap;gap:8px;min-height:30px}
+.stag{display:flex;align-items:center;gap:6px;padding:5px 11px;background:var(--s2);border:1px solid var(--b);border-radius:8px;font-size:12px}
+.stag .rm{color:var(--muted);cursor:pointer;font-size:16px;line-height:1;transition:color .1s}
+.stag .rm:hover{color:var(--danger)}
+
+/* RENAME ROW */
+.rename-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.rename-row input{flex:1;min-width:140px;padding:9px 13px;background:var(--s2);border:1px solid var(--b);border-radius:9px;color:var(--txt);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.rename-row input:focus{border-color:var(--acc)}
+
+/* API URL CARD */
+.api-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.api-row input{flex:1;min-width:200px;padding:10px 13px;background:var(--s2);border:1px solid var(--b);border-radius:9px;color:var(--txt);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.api-row input:focus{border-color:var(--acc)}.api-row input::placeholder{color:var(--muted)}
+.api-display{font-size:11px;color:var(--acc);word-break:break-all;margin-top:8px;padding:9px 12px;background:var(--s2);border-radius:9px;min-height:34px;line-height:1.5}
+
+/* REPORT ROWS */
+.report-row{border-left:3px solid var(--b2)}
+.report-row.duplicate{border-color:var(--danger)}
+.report-row.mismatch{border-color:var(--warn)}
+.report-row.custom{border-color:var(--purple)}
+.report-detail{padding:11px 18px;background:var(--s2);font-size:12px;color:var(--muted);border-top:1px solid var(--b);display:none;line-height:1.7}
+.report-detail.open{display:block}
+
+/* LOG ROWS */
+.log-row{padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.03);display:flex;gap:12px;align-items:flex-start}
+.log-row:last-child{border-bottom:none}
+.log-time{font-size:11px;color:var(--muted);flex-shrink:0;min-width:145px}
+.log-who{font-size:12px;color:var(--acc);flex-shrink:0;min-width:80px}
+.log-action{font-size:13px;flex:1}
+.log-detail{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* LOADER / TOAST */
+.ld{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);gap:8px}
+.sp{width:16px;height:16px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--acc);color:#07080c;padding:11px 20px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;transform:translateY(8px);transition:all .24s;z-index:9999;max-width:360px;word-break:break-word;pointer-events:none}
+.toast.show{opacity:1;transform:none}.toast.err{background:var(--danger);color:#fff}.toast.info{background:var(--purple);color:#fff}
+
+/* SAVING OVERLAY */
+.save-ov{position:fixed;inset:0;background:rgba(7,8,12,.85);z-index:9000;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(3px)}
+.save-ov.on{display:flex}
+.save-ov-sp{width:46px;height:46px;border:3px solid rgba(34,211,168,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .65s linear infinite}
+.save-ov-msg{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--acc)}
+.save-ov-sub{font-size:12px;color:var(--muted)}
+/* REFRESH BTN — top bar of each page */
+.pg-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap}
+.pg-bar-left{flex:1}
+.btn-refresh{padding:7px 14px;border-radius:8px;border:1px solid var(--b2);background:var(--s2);color:var(--acc);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:'DM Sans',sans-serif}
+.btn-refresh:hover{border-color:var(--acc);background:rgba(34,211,168,.07)}
+.btn-refresh svg{transition:transform .4s}
+.btn-refresh.spinning svg{transform:rotate(360deg)}
+/* TOP BAR — logout + user info */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px 10px 240px;background:var(--s1);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:40}
+.top-bar-user{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.top-bar-role{font-size:10px;color:var(--acc);background:rgba(34,211,168,.1);padding:2px 8px;border-radius:10px}
+.btn-toplogout{padding:6px 13px;border-radius:8px;border:1px solid rgba(244,63,94,.25);background:rgba(244,63,94,.06);color:var(--danger);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .13s}
+.btn-toplogout:hover{background:rgba(244,63,94,.14)}
+/* SMART BUTTON — disabled until valid, green when ready */
+.btn-smart{padding:9px 17px;border-radius:9px;font-size:13px;font-weight:600;cursor:not-allowed;font-family:'DM Sans',sans-serif;border:1px solid var(--b2);background:var(--s2);color:var(--muted);display:inline-flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap;opacity:.6}
+.btn-smart.ready{cursor:pointer;background:var(--acc);color:#07080c;border-color:var(--acc);opacity:1;transform:scale(1.01)}
+.btn-smart.ready:hover{opacity:.9}
+.btn-smart.saving{background:rgba(34,211,168,.15);color:var(--acc);border-color:var(--acc);cursor:not-allowed;opacity:1}
+@media(max-width:900px){.top-bar{padding-left:66px}}
+/* RESPONSIVE */
+@media(max-width:900px){
+  .side{width:56px}
+  .side-top .side-owner,.side-top .side-role,.snav-sec,.nl span,.side-bot span,.side-logo em{display:none}
+  .side-logo{font-size:11px}.nl{justify-content:center;padding:12px 0}
+  .content{margin-left:56px;padding:16px}
+  .stats{grid-template-columns:1fr 1fr}.branch-grid{grid-template-columns:1fr}
+  .nl-badge{right:2px;font-size:9px;padding:1px 4px}
+}
+@media(min-width:901px) and (max-width:1280px){
+  .side{width:196px}.content{margin-left:196px}
+  .stats{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">Green <em>Salon</em></div>
+    <div class="lsub">Owner &amp; Admin Panel</div>
+    <div class="lver">v22</div>
+    <label class="llbl">Admin Name</label>
+    <input type="text" class="linput" id="ladmin" placeholder="Harsha / Manager" value="Harsha">
+    <label class="llbl">Password</label>
+    <input type="password" class="linput" id="lpw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="lbtn" onclick="doLogin()">Login to Dashboard</button>
+    <div class="lerr" id="lerr"></div>
+    <div class="lfoot">one stop solutions - dlb</div>
+  </div>
+</div>
+
+<div id="app">
+
+<!-- SAVING OVERLAY -->
+<div class="save-ov" id="save-ov">
+  <div class="save-ov-sp"></div>
+  <div class="save-ov-msg" id="save-ov-msg">Saving...</div>
+  <div class="save-ov-sub" id="save-ov-sub">Updating Google Sheet</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="top-bar" id="top-bar">
+  <div class="top-bar-user">
+    <span id="tb-name">Welcome</span>
+    <span class="top-bar-role" id="tb-role">owner</span>
+  </div>
+  <button class="btn-toplogout" onclick="logout()">✕ Logout</button>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="side">
+  <div class="side-top">
+    <div class="side-logo">Green <em>Salon</em></div>
+    <div class="side-owner" id="side-owner">Welcome</div>
+    <div class="side-role" id="side-role">owner</div>
+  </div>
+  <div class="side-nav">
+    <div class="snav-sec">Overview</div>
+    <div class="nl on" id="nl-branches" onclick="nav('branches')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>All Branches</span>
+    </div>
+    <div class="snav-sec" id="b-sec" style="display:none">Branch</div>
+    <div class="nl" id="nl-today" style="display:none" onclick="nav('today')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Today</span>
+    </div>
+    <div class="nl" id="nl-entries" style="display:none" onclick="nav('entries');loadToday()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg><span>Entries</span>
+    </div>
+    <div class="nl" id="nl-monthly" style="display:none" onclick="loadMonthly();nav('monthly')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Monthly</span>
+    </div>
+    <div class="nl" id="nl-staff" style="display:none" onclick="nav('staff')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Staff</span>
+    </div>
+    <div class="nl" id="nl-services" style="display:none" onclick="nav('services')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 12h6M9 16h4"/></svg><span>Services</span>
+    </div>
+    <div class="nl" id="nl-products" style="display:none" onclick="nav('products')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/></svg><span>Products</span>
+    </div>
+    <div class="nl" id="nl-reports" style="display:none" onclick="loadReports();nav('reports')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>Reports</span><span class="nl-badge" id="reports-badge" style="display:none">0</span>
+    </div>
+    <div class="nl" id="nl-settings" style="display:none" onclick="nav('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </div>
+  </div>
+  <div class="side-bot">
+    <div class="logout" onclick="logout()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Logout</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ALL BRANCHES -->
+<div class="pg on" id="pg-branches">
+  <div class="ph">
+    <div>
+      <div class="ptitle">All Branches <span class="live-dot" title="Live — auto-refresh 30s"></span></div>
+      <div class="psub" id="b-sub">Your salon network</div>
+    </div>
+  </div>
+  <div class="branch-grid" id="branch-grid"><div class="ld"><div class="sp"></div> Loading...</div></div>
+  <div id="deleted-section" style="display:none;margin-top:28px">
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--muted);margin-bottom:12px">
+      🗑 Deleted Branches — <span style="color:var(--txt);font-size:13px;font-weight:400">Data preserved. Click Recover to restore.</span>
+    </div>
+    <div class="branch-grid" id="deleted-grid"></div>
+  </div>
+</div>
+
+<!-- TODAY -->
+<div class="pg" id="pg-today">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc1"></span><span class="bc-sep">›</span><span>Today</span></div>
+  <div class="ph">
+    <div><div class="ptitle" id="today-title">Today <span class="live-dot"></span></div><div class="psub" id="today-sub"></div></div>
+    <button class="btn-refresh" onclick="doRefresh('today')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button>
+  </div>
+  <div class="stats">
+    <div class="sc"><div class="sc-lbl">Services</div><div class="sc-val g" id="st-svc">₹—</div></div>
+    <div class="sc"><div class="sc-lbl">Products</div><div class="sc-val pr" id="st-prod">₹—</div></div>
+    <div class="sc"><div class="sc-lbl">Tips</div><div class="sc-val y" id="st-tip">₹—</div></div>
+    <div class="sc"><div class="sc-lbl">Expenses</div><div class="sc-val r" id="st-exp">₹—</div></div>
+    <div class="sc"><div class="sc-lbl">Count</div><div class="sc-val" id="st-cnt">—</div></div>
+    <div class="sc"><div class="sc-lbl">Active Staff</div><div class="sc-val p" id="st-stf">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Staff Performance</div></div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Staff</th><th>Services</th><th>Revenue</th><th>Products</th><th>Tips</th><th>Total</th></tr></thead>
+      <tbody id="perf-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ENTRIES -->
+<div class="pg" id="pg-entries">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc2"></span><span class="bc-sep">›</span><span>Entries</span></div>
+  <div class="ph">
+    <div><div class="ptitle">Today's Entries</div><div class="psub">Removed = flagged in Sheet (data preserved, not counted)</div></div>
+    <button class="btn-refresh" onclick="doRefresh('entries')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-head"><div class="card-title">Services</div></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Time</th><th>Staff</th><th>Service</th><th>Amount</th><th>Tip</th><th>Payment</th><th>Action</th></tr></thead><tbody id="ent-body"></tbody></table></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-head"><div class="card-title" style="color:var(--prod)">Product Sales</div></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Time</th><th>Staff</th><th>Product</th><th>Amount</th><th>Payment</th><th>Action</th></tr></thead><tbody id="prod-body"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title" style="color:var(--danger)">Expenses</div></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Time</th><th>Staff</th><th>Description</th><th>Amount</th><th>Payment</th><th>Action</th></tr></thead><tbody id="exp-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- MONTHLY -->
+<div class="pg" id="pg-monthly">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc3"></span><span class="bc-sep">›</span><span id="month-lbl">Monthly</span></div>
+  <div class="ph">
+    <div><div class="ptitle" id="monthly-title">Monthly Summary</div><div class="psub">One row per day — totals only — mirrors Google Sheet exactly</div></div>
+    <button class="btn-refresh" onclick="doRefresh('monthly')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <table><thead><tr id="month-hdr"></tr></thead><tbody id="month-body"></tbody></table>
+  </div>
+</div>
+
+<!-- STAFF -->
+<div class="pg" id="pg-staff">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc4"></span><span class="bc-sep">›</span><span>Staff</span></div>
+  <div class="ph"><div><div class="ptitle">Manage Staff</div><div class="psub">Edit name · toggle commission · add · remove — all sync to tablet &amp; Sheet instantly</div></div><button class="btn-refresh" onclick="doRefresh('staff')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">Add New Staff Member</div></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="field"><label>Full Name</label><input type="text" id="ns-name" placeholder="e.g. Ali" oninput="chkStaffForm()" onkeydown="if(event.key==='Enter')event.preventDefault()"></div>
+        <div class="field"><label>4-Digit PIN</label><input type="text" id="ns-pin" placeholder="1234" maxlength="4" inputmode="numeric" oninput="chkStaffForm()" onkeydown="if(event.key==='Enter')event.preventDefault()"></div>
+        <div class="field"><label>Commission %</label><input type="number" id="ns-comm" placeholder="40" min="0" max="100" value="40"></div>
+      </div>
+      <div class="tgl-row">
+        <div><div class="tgl-lbl">Commission Enabled</div><div class="tgl-sub">Toggle off for fixed-salary staff</div></div>
+        <div class="tgl on" id="ns-tgl" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <button class="btn-smart" id="add-staff-btn" onclick="addStaff()" style="margin-top:14px" disabled>+ Add to Branch</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Current Staff</div><span style="font-size:12px;color:var(--muted)">✏ Edit name · toggle commission · remove</span></div>
+    <div id="staff-list"><div class="ld"><div class="sp"></div></div></div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<div class="pg" id="pg-services">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc5"></span><span class="bc-sep">›</span><span>Services</span></div>
+  <div class="ph"><div><div class="ptitle">Service Menu</div><div class="psub">Services shown on tablet for this branch</div></div><button class="btn-refresh" onclick="doRefresh('services')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">Add Service</div></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="field"><label>Service Name</label><input type="text" id="new-sv-n" placeholder="e.g. Hot Towel Shave"></div>
+        <div class="field"><label>Price (₹)</label><input type="number" id="new-sv-p" placeholder="250"></div>
+      </div>
+      <button class="btn btn-acc" onclick="addSvc()">Add Service</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Current Services</div><button class="btn-smart ready btn-sm" id="save-svc-btn" onclick="saveSvcs()">Save to Sheet</button></div>
+    <div class="card-body"><div class="svc-tags" id="svc-tags"></div></div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="pg" id="pg-products">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc6"></span><span class="bc-sep">›</span><span>Products</span></div>
+  <div class="ph"><div><div class="ptitle">Product Menu</div><div class="psub">Products staff can select when recording a sale</div></div><button class="btn-refresh" onclick="doRefresh('products')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">Add Product</div></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="field"><label>Product Name</label><input type="text" id="new-pd-n" placeholder="e.g. Argan Oil"></div>
+        <div class="field"><label>Price (₹)</label><input type="number" id="new-pd-p" placeholder="250"></div>
+      </div>
+      <button class="btn btn-acc" onclick="addProd()">Add Product</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">Current Products</div><button class="btn-smart ready btn-sm" id="save-prod-btn" onclick="saveProds()">Save to Sheet</button></div>
+    <div class="card-body"><div class="svc-tags" id="prod-tags"></div></div>
+  </div>
+</div>
+
+<!-- REPORTS -->
+<div class="pg" id="pg-reports">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc-rep"></span><span class="bc-sep">›</span><span>Reports</span></div>
+  <div class="ph">
+    <div><div class="ptitle">⚠ Reports / Complaints</div><div class="psub">Staff-reported issues — duplicate entries, mismatches, custom complaints</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <select id="rep-filter" onchange="loadReports()" style="padding:9px 12px;background:var(--s2);border:1px solid var(--b);border-radius:9px;color:var(--txt);font-size:13px;outline:none;font-family:'DM Sans',sans-serif">
+        <option value="">All Reports</option>
+        <option value="Pending">Pending Only</option>
+        <option value="Resolved">Resolved Only</option>
+      </select>
+      <button class="btn-refresh" onclick="doRefresh('reports')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Refresh</button>
+    </div>
+  </div>
+  <div class="stats" style="margin-bottom:18px">
+    <div class="sc"><div class="sc-lbl">Total</div><div class="sc-val" id="rep-total">—</div></div>
+    <div class="sc"><div class="sc-lbl">Pending</div><div class="sc-val r" id="rep-pending">—</div></div>
+    <div class="sc"><div class="sc-lbl">Resolved</div><div class="sc-val g" id="rep-resolved">—</div></div>
+    <div class="sc"><div class="sc-lbl">Duplicates</div><div class="sc-val y" id="rep-dup">—</div></div>
+    <div class="sc"><div class="sc-lbl">Mismatched</div><div class="sc-val p" id="rep-mis">—</div></div>
+    <div class="sc"><div class="sc-lbl">Custom</div><div class="sc-val pr" id="rep-cus">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">All Reports</div><span style="font-size:12px;color:var(--muted)">Click a row to expand &amp; take action</span></div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Time</th><th>Staff</th><th>Type</th><th>Entry</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="reports-body"><tr><td colspan="6"><div class="ld"><div class="sp"></div></div></td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="pg" id="pg-settings">
+  <div class="bc-nav"><span class="bc-link" onclick="nav('branches')">All Branches</span><span class="bc-sep">›</span><span id="bc7"></span><span class="bc-sep">›</span><span>Settings</span></div>
+  <div class="ph"><div><div class="ptitle">Branch Settings</div><div class="psub">API URL · rename · emails · reports · auto-recovery</div></div></div>
+
+  <!-- API URL -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">🔗 Apps Script API URL</div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Paste new URL here after each redeploy. Saved in browser — survives page refresh.</p>
+      <label style="display:block;font-size:11px;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px">API URL</label>
+      <div class="api-row">
+        <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+        <button class="btn btn-acc" onclick="saveApiUrl()">Save URL</button>
+        <button class="btn btn-ghost" onclick="testConn()">Test Connection</button>
+        <button class="btn btn-ghost" onclick="resetApiUrl()">Reset to Default</button>
+      </div>
+      <div class="api-display" id="api-url-display">—</div>
+      <p style="font-size:12px;color:var(--muted);margin-top:6px" id="api-url-status"></p>
+    </div>
+  </div>
+
+  <!-- Rename -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">Rename Branch</div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Updates dashboard name and Google Sheet monthly tab header.</p>
+      <div class="rename-row"><input type="text" id="rename-input" placeholder="New branch name..."><button class="btn btn-acc" onclick="doRename()">Rename</button></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:6px" id="rename-status"></p>
+    </div>
+  </div>
+
+  <!-- Emails -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">📧 Report Email Recipients</div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7">
+        Daily CSV report at <strong style="color:var(--txt)">11:00 PM IST</strong> · Monthly report on <strong style="color:var(--txt)">last day of month</strong> · All 3 recipients get every report.
+      </p>
+      <div class="field" style="margin-bottom:11px"><label>Recipient 1 (Primary)</label><input type="email" id="email-1" placeholder="owner@gmail.com"></div>
+      <div class="field" style="margin-bottom:11px"><label>Recipient 2</label><input type="email" id="email-2" placeholder="manager@gmail.com (optional)"></div>
+      <div class="field" style="margin-bottom:16px"><label>Recipient 3</label><input type="email" id="email-3" placeholder="accountant@gmail.com (optional)"></div>
+      <button class="btn btn-acc" onclick="saveEmails()">Save Recipients</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:9px" id="email-status"></p>
+    </div>
+  </div>
+
+  <!-- Send now -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">📤 Send Report Now</div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Send CSV reports to all saved recipients immediately.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-acc" onclick="sendManualReport('daily')">Send Daily Report (CSV)</button>
+        <button class="btn btn-ghost" onclick="sendManualReport('monthly')">Send Monthly Report (CSV)</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px" id="report-status"></p>
+    </div>
+  </div>
+
+  <!-- Auto Recovery -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head"><div class="card-title">🔧 Auto-Recovery</div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+        If Google Sheet structure was accidentally broken (columns deleted, tabs missing), click Fix to restore all required tabs and headers without deleting any existing data.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-warn" onclick="fixBranchSheet()">🔧 Fix This Branch's Sheet Structure</button>
+        <button class="btn btn-solid-danger" onclick="fixAllSheets()">⚡ Fix ALL Branches at Once</button>
+      </div>
+      <div id="fix-status" style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.7"></div>
+    </div>
+  </div>
+
+  <!-- Admin Log -->
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 Admin Action Log</div><button class="btn btn-ghost btn-sm" onclick="loadAdminLog()">Load Log</button></div>
+    <div id="admin-log-body" style="max-height:320px;overflow-y:auto">
+      <div class="ld" style="padding:22px"><span style="font-size:13px;color:var(--muted)">Click "Load Log" to see recent admin actions</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /layout -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// GREEN SALON OWNER PANEL v24
+// one stop solutions - dlb
+// ══════════════════════════════════════════════════════
+
+// Default URL — change here OR via Settings → API URL (saved to localStorage)
+const DEFAULT_API_URL = "PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE";
+let API_URL = localStorage.getItem('gs_api_url') || DEFAULT_API_URL;
+
+let ST = {
+  branches:[], deleted:[], cur:null,
+  staff:[], services:[], products:[],
+  adminId:"admin1", adminName:"Harsha", role:"owner",
+  pollTimer:null
+};
+
+// ── XSS SAFE HELPERS ─────────────────────────────────
+function esc(s){const d=document.createElement('div');d.textContent=String(s??'');return d.innerHTML;}
+function escA(s){return String(s??'').replace(/'/g,"&#39;").replace(/"/g,"&quot;");}
+
+// ── API ───────────────────────────────────────────────
+async function GET(action, bid=''){
+  const r = await fetch(`${API_URL}?action=${action}&branchId=${encodeURIComponent(bid)}`);
+  const ct = r.headers.get('content-type')||'';
+  if(!ct.includes('json')&&!ct.includes('plain')) throw new Error('API returned HTML — check: Execute as Me, Anyone access, URL ends /exec');
+  return r.json();
+}
+async function POST(body){
+  const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(body)});
+  const ct = r.headers.get('content-type')||'';
+  if(!ct.includes('json')&&!ct.includes('plain')) throw new Error('API returned HTML — check deployment settings');
+  return r.json();
+}
+
+// ── LOGIN ─────────────────────────────────────────────
+async function doLogin(){
+  const name = document.getElementById('ladmin').value.trim();
+  const pw   = document.getElementById('lpw').value;
+  document.getElementById('lerr').textContent = '';
+  if(!name){ document.getElementById('lerr').textContent='Enter admin name'; return; }
+  try{
+    const d = await POST({action:'adminLogin', name, password:pw});
+    if(d.success){
+      ST.adminId   = d.adminId;
+      ST.adminName = d.adminName;
+      ST.role      = d.role;
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display   = 'block';
+      document.getElementById('side-owner').textContent = 'Welcome, '+d.adminName;
+      document.getElementById('tb-name').textContent = d.adminName;
+      document.getElementById('tb-role').textContent = d.role;
+      document.getElementById('side-role').textContent  = d.role;
+      document.getElementById('today-sub').textContent  = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      await loadBranches();
+      startPolling();
+    } else {
+      document.getElementById('lerr').textContent = 'Invalid credentials.';
+    }
+  }catch(ex){
+    document.getElementById('lerr').textContent = 'Connection error: '+ex.message;
+  }
+}
+function logout(){
+  stopPolling();
+  document.getElementById('app').style.display   = 'none';
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('lpw').value = '';
+  ST.cur = null; hideBNav();
+}
+
+// ── POLLING — live 30s refresh ────────────────────────
+function startPolling(){
+  stopPolling();
+  ST.pollTimer = setInterval(()=>{
+    if(!ST.cur) return;
+    const pg = document.querySelector('.pg.on')?.id;
+    if(pg==='pg-today'||pg==='pg-entries') loadToday();
+    else if(pg==='pg-reports') loadReports();
+    ST.branches.forEach(b=>loadRevCard(b.id));
+    checkPendingReports();
+  }, 30000);
+}
+function stopPolling(){ if(ST.pollTimer) clearInterval(ST.pollTimer); }
+
+async function checkPendingReports(){
+  if(!ST.cur) return;
+  try{
+    const d = await POST({action:'getReports', branchId:ST.cur.id, status:'Pending'});
+    if(d.success){
+      const n = (d.reports||[]).length;
+      const badge = document.getElementById('reports-badge');
+      if(n>0){ badge.textContent=n; badge.style.display='block'; }
+      else badge.style.display = 'none';
+    }
+  }catch(ex){}
+}
+
+// ── API URL MANAGEMENT ────────────────────────────────
+function initApiUrlDisplay(){
+  const el  = document.getElementById('api-url-display');
+  const inp = document.getElementById('api-url-input');
+  if(el)  el.textContent  = API_URL;
+  if(inp) inp.value       = API_URL;
+}
+function saveApiUrl(){
+  let v = document.getElementById('api-url-input').value.trim();
+  if(!v){ toast('Enter a URL', true); return; }
+  if(!v.startsWith('https://script.google.com')){ toast('Invalid URL — must start with https://script.google.com', true); return; }
+  if(!v.endsWith('/exec')) v = v.replace(/\/+$/, '')+'/exec';
+  localStorage.setItem('gs_api_url', v);
+  API_URL = v;
+  document.getElementById('api-url-display').textContent = v;
+  document.getElementById('api-url-input').value = v;
+  document.getElementById('api-url-status').textContent = '✓ Saved. Reload page to apply fully.';
+  toast('API URL saved ✓');
+}
+function resetApiUrl(){
+  localStorage.removeItem('gs_api_url');
+  API_URL = DEFAULT_API_URL;
+  document.getElementById('api-url-display').textContent = DEFAULT_API_URL;
+  document.getElementById('api-url-input').value = DEFAULT_API_URL;
+  document.getElementById('api-url-status').textContent = 'Reset to default.';
+  toast('Reset to default');
+}
+async function testConn(){
+  const st = document.getElementById('api-url-status');
+  st.textContent = 'Testing...'; st.style.color = 'var(--muted)';
+  try{
+    const d = await GET('getBranches');
+    if(d.success){ st.style.color='var(--acc)'; st.textContent='✓ Connected — '+((d.branches||[]).length)+' branches found'; }
+    else{ st.style.color='var(--danger)'; st.textContent='Error: '+d.error; }
+  }catch(ex){ st.style.color='var(--danger)'; st.textContent='Failed: '+ex.message; }
+}
+
+// ── BRANCHES ──────────────────────────────────────────
+async function loadBranches(){
+  try{
+    const d = await POST({action:'getBranches'});
+    if(d.success){ ST.branches=d.branches||[]; ST.deleted=d.deleted||[]; renderBranches(); }
+  }catch(ex){
+    document.getElementById('branch-grid').innerHTML = '<div style="padding:40px;color:var(--danger)">Error: '+esc(ex.message)+'</div>';
+  }
+}
+function renderBranches(){
+  const n = ST.branches.length;
+  document.getElementById('b-sub').textContent = n+' branch'+(n!==1?'es':'')+' active';
+  const g = document.getElementById('branch-grid');
+  g.innerHTML = n ? ST.branches.map(b=>`
+    <div class="bcard bcard-click" onclick="drillIn('${escA(b.id)}','${escA(b.name)}','${escA(b.location||'')}')">
+      <div class="bcard-name">${esc(b.name)}</div>
+      <div class="bcard-loc">📍 ${esc(b.location||'No location set')}</div>
+      <div class="bcard-stats">
+        <div class="bcs"><div class="bcs-lbl">Today Revenue</div><div class="bcs-val" id="brev-${b.id}">₹—</div></div>
+        <div class="bcs"><div class="bcs-lbl">Status</div><div class="bcs-val" style="font-size:12px;color:var(--acc)">Active</div></div>
+      </div>
+      <div class="bcard-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-warn btn-sm" onclick="askRename('${escA(b.id)}','${escA(b.name)}')">✏ Rename</button>
+        <button class="btn btn-danger btn-sm" onclick="askDelete('${escA(b.id)}','${escA(b.name)}')">🗑 Delete</button>
+      </div>
+      <div class="bcard-foot">
+        <span>ID: ${b.id}</span>
+        <span class="copy-id" onclick="event.stopPropagation();copyId('${escA(b.id)}')">Copy ID</span>
+      </div>
+    </div>`).join('')
+  : '<div style="padding:40px;text-align:center;color:var(--muted)">No active branches.</div>';
+  ST.branches.forEach(b=>loadRevCard(b.id));
+
+  const ds = document.getElementById('deleted-section');
+  if(ST.deleted.length){
+    ds.style.display = 'block';
+    document.getElementById('deleted-grid').innerHTML = ST.deleted.map(b=>`
+      <div class="bcard bcard-deleted">
+        <div class="deleted-tag">🗑 Deleted</div>
+        <div class="bcard-name">${esc(b.name)}</div>
+        <div class="bcard-loc">📍 ${esc(b.location||'No location')}</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">All data preserved. Recover anytime.</p>
+        <div class="bcard-actions">
+          <button class="btn btn-recover btn-sm" onclick="recoverBranch('${escA(b.id)}','${escA(b.name)}')">↩ Recover</button>
+        </div>
+        <div class="bcard-foot"><span>Deleted: ${esc(b.deletedAt||'—')}</span></div>
+      </div>`).join('');
+  } else ds.style.display = 'none';
+}
+
+async function loadRevCard(bid){
+  try{
+    const d = await POST({action:'getTodayAll', branchId:bid});
+    if(d.success){
+      const svc  = (d.staffTotals||[]).reduce((s,x)=>s+x.totalAmount+x.totalTip, 0);
+      const prod = d.totalProductRevenue||0;
+      const el   = document.getElementById('brev-'+bid);
+      if(el) el.textContent = '₹'+(svc+prod);
+    }
+  }catch(ex){}
+}
+
+function askRename(id,name){
+  const n = prompt(`Rename "${name}" to:`);
+  if(!n||!n.trim()||n.trim()===name) return;
+  doRenameById(id, n.trim());
+}
+async function doRenameById(id,newName){
+  try{
+    const d = await POST({action:'renameBranch', branchId:id, newName});
+    if(d.success){ toast('Branch renamed ✓'); await loadBranches(); }
+    else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+function askDelete(id,name){
+  if(!confirm(`Delete "${name}"?\n\nAll Google Sheet data is preserved.\nYou can recover anytime.`)) return;
+  doDeleteBranch(id, name);
+}
+async function doDeleteBranch(id,name){
+  try{
+    const d = await POST({action:'removeBranch', branchId:id});
+    if(d.success){ toast(`"${name}" deleted — recover anytime`); await loadBranches(); }
+    else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+async function recoverBranch(id,name){
+  if(!confirm(`Recover "${name}"?`)) return;
+  try{
+    const d = await POST({action:'recoverBranch', branchId:id});
+    if(d.success){ toast(`"${name}" recovered ✓`); await loadBranches(); }
+    else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+async function drillIn(id,name,loc){
+  ST.cur = {id,name,location:loc};
+  ['bc1','bc2','bc3','bc4','bc5','bc6','bc7','bc-rep'].forEach(x=>{ const e=document.getElementById(x); if(e) e.textContent=name; });
+  document.getElementById('today-title').innerHTML = esc(name)+' <span class="live-dot"></span>';
+  document.getElementById('monthly-title').textContent = 'Monthly — '+name;
+  showBNav();
+  await Promise.all([loadToday(), loadStaff(), loadSvcs(), loadProds()]);
+  checkPendingReports();
+  nav('today');
+}
+function showBNav(){
+  document.getElementById('b-sec').style.display = 'block';
+  ['nl-today','nl-entries','nl-monthly','nl-staff','nl-services','nl-products','nl-reports','nl-settings'].forEach(id=>document.getElementById(id).style.display='flex');
+}
+function hideBNav(){
+  document.getElementById('b-sec').style.display = 'none';
+  ['nl-today','nl-entries','nl-monthly','nl-staff','nl-services','nl-products','nl-reports','nl-settings'].forEach(id=>document.getElementById(id).style.display='none');
+}
+function copyId(id){ navigator.clipboard.writeText(id).then(()=>toast('Branch ID copied!')).catch(()=>{}); }
+
+// ── NAV ───────────────────────────────────────────────
+function nav(pg){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nl').forEach(n=>n.classList.remove('on'));
+  document.getElementById('pg-'+pg).classList.add('on');
+  const nl = document.getElementById('nl-'+pg);
+  if(nl) nl.classList.add('on'); else document.getElementById('nl-branches').classList.add('on');
+  if(pg==='settings'&&ST.cur){ loadEmail(); document.getElementById('rename-input').value=ST.cur.name||''; initApiUrlDisplay(); }
+  if(pg==='today'&&ST.cur) loadToday();
+}
+
+// ── TODAY ─────────────────────────────────────────────
+async function loadToday(){
+  if(!ST.cur) return;
+  const loaders = '<tr><td colspan="7"><div class="ld"><div class="sp"></div></div></td></tr>';
+  ['ent-body','prod-body','exp-body','perf-body'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=loaders; });
+  try{
+    const d = await POST({action:'getTodayAll', branchId:ST.cur.id});
+    if(!d.success){ toast('Error: '+d.error, true); return; }
+    const tots = d.staffTotals||[], ents=d.entries||[], prds=d.productSales||[], exps=d.expenses||[];
+    const svcTotal  = tots.reduce((s,t)=>s+t.totalAmount, 0);
+    const prodTotal = d.totalProductRevenue||0;
+    const tipTotal  = tots.reduce((s,t)=>s+t.totalTip, 0);
+    document.getElementById('st-svc').textContent  = '₹'+svcTotal;
+    document.getElementById('st-prod').textContent = '₹'+prodTotal;
+    document.getElementById('st-tip').textContent  = '₹'+tipTotal;
+    document.getElementById('st-exp').textContent  = '₹'+(d.totalExp||0);
+    document.getElementById('st-cnt').textContent  = tots.reduce((s,t)=>s+(t.entries||0), 0);
+    document.getElementById('st-stf').textContent  = tots.length;
+
+    document.getElementById('perf-body').innerHTML = tots.length
+      ? tots.map(t=>`<tr>
+          <td><strong>${esc(t.name)}</strong></td>
+          <td>${t.entries}</td>
+          <td style="color:var(--acc)">₹${t.totalAmount}</td>
+          <td style="color:var(--prod)">₹${t.products||0}</td>
+          <td style="color:var(--warn)">₹${t.totalTip}</td>
+          <td style="color:var(--acc);font-weight:700">₹${t.totalAmount+t.totalTip+(t.products||0)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No entries today yet</td></tr>';
+
+    const payBadge = m => m==='Cash'?'bc':m==='Online'?'bo':'bu';
+    const timeOnly = ts => (String(ts||'').split(' ')[1]||'').slice(0,-3)||'—';
+
+    document.getElementById('ent-body').innerHTML = ents.length
+      ? ents.map(e=>`<tr class="${e.flagged?'flagged':''}">
+          <td>${esc(timeOnly(e.timestamp))}</td>
+          <td>${esc(e.staffName)}</td>
+          <td>${esc(e.service)}</td>
+          <td style="color:var(--acc)">₹${e.amount}</td>
+          <td style="color:var(--warn)">${Number(e.tip)>0?'₹'+e.tip:'—'}</td>
+          <td><span class="badge ${payBadge(e.paymentMethod)}">${e.paymentMethod}</span></td>
+          <td>${e.flagged?'<span style="color:var(--muted);font-size:11px">Removed</span>'
+            :`<button class="btn btn-danger btn-sm" onclick="rmEntry('${escA(e.rowId)}','service')">Remove</button>`}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:22px">No service entries today</td></tr>';
+
+    document.getElementById('prod-body').innerHTML = prds.length
+      ? prds.map(p=>`<tr class="${p.flagged?'flagged':''}">
+          <td>${esc(timeOnly(p.timestamp))}</td>
+          <td>${esc(p.staffName)}</td>
+          <td>${esc(p.product)}</td>
+          <td style="color:var(--prod)">₹${p.amount}</td>
+          <td><span class="badge ${payBadge(p.paymentMethod)}">${p.paymentMethod}</span></td>
+          <td>${p.flagged?'<span style="color:var(--muted);font-size:11px">Removed</span>'
+            :`<button class="btn btn-danger btn-sm" onclick="rmEntry('${escA(p.rowId)}','product')">Remove</button>`}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">No product sales today</td></tr>';
+
+    document.getElementById('exp-body').innerHTML = exps.length
+      ? exps.map(x=>`<tr class="${x.flagged?'flagged':''}">
+          <td>${esc(timeOnly(x.timestamp))}</td>
+          <td>${esc(x.staffName)}</td>
+          <td>${esc(x.description)}</td>
+          <td style="color:var(--danger)">₹${x.amount}</td>
+          <td><span class="badge ${payBadge(x.paymentMethod)}">${x.paymentMethod}</span></td>
+          <td>${x.flagged?'<span style="color:var(--muted);font-size:11px">Removed</span>'
+            :`<button class="btn btn-danger btn-sm" onclick="rmEntry('${escA(x.rowId)}','expense')">Remove</button>`}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">No expenses today</td></tr>';
+
+  }catch(ex){ toast('Error loading today: '+ex.message, true); }
+}
+
+async function rmEntry(rowId,type){
+  if(!confirm('Remove this entry?\n\nData is preserved in Google Sheet (flagged) — not counted in totals.')) return;
+  const actions = {service:'deleteEntry', product:'deleteProduct', expense:'deleteExpense'};
+  try{
+    const d = await POST({action:actions[type], branchId:ST.cur.id, rowId});
+    if(d.success){ toast('Removed — flagged in Sheet ✓'); loadToday(); }
+    else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+
+// ── MONTHLY — one row per day, totals only ────────────
+async function loadMonthly(){
+  if(!ST.cur) return;
+  document.getElementById('month-body').innerHTML = '<tr><td colspan="14"><div class="ld"><div class="sp"></div></div></td></tr>';
+  try{
+    const d = await POST({action:'getMonthSummary', branchId:ST.cur.id});
+    document.getElementById('month-lbl').textContent = d.month||'Monthly';
+    if(!d.summary||!d.summary.length){
+      document.getElementById('month-hdr').innerHTML = '';
+      document.getElementById('month-body').innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--muted);padding:32px">No data this month yet.</td></tr>';
+      return;
+    }
+    const keys = Object.keys(d.summary[0]);
+    document.getElementById('month-hdr').innerHTML = keys.map(k=>`<th>${esc(k)}</th>`).join('');
+    document.getElementById('month-body').innerHTML = d.summary.map((r,ri)=>{
+      const isTot = String(r['Date']||'').trim()==='TOTAL';
+      return `<tr style="${isTot?'font-weight:700;background:rgba(34,211,168,.06)':ri%2===0?'':'background:rgba(255,255,255,.012)'}">
+        ${keys.map(k=>{
+          const v = r[k];
+          if(k==='Date')        return `<td><strong>${esc(v)}</strong></td>`;
+          if(k==='Total')       return `<td style="color:var(--acc);font-weight:700">₹${v||0}</td>`;
+          if(k==='Expenses')    return `<td style="color:var(--danger)">₹${v||0}</td>`;
+          if(k==='Commission')  return `<td style="color:var(--warn)">₹${v||0}</td>`;
+          if(k==='Product')     return `<td style="color:var(--prod)">₹${v||0}</td>`;
+          if(k==='Difference')  return `<td style="color:${Number(v)>=0?'var(--acc)':'var(--danger)'}">₹${v||0}</td>`;
+          return `<td>${typeof v==='number'?'₹'+v:esc(String(v||'—'))}</td>`;
+        }).join('')}
+      </tr>`;
+    }).join('');
+  }catch(ex){ toast('Error: '+ex.message, true); }
+}
+
+// ── STAFF ─────────────────────────────────────────────
+async function loadStaff(){
+  if(!ST.cur) return;
+  try{ const d=await POST({action:'getStaffAdmin',branchId:ST.cur.id}); if(d.success){ST.staff=d.staff||[];renderStaff();} }catch(ex){}
+}
+function renderStaff(){
+  const el = document.getElementById('staff-list');
+  if(!ST.staff.length){ el.innerHTML='<div style="padding:36px;text-align:center;color:var(--muted)">No staff added yet</div>'; return; }
+  el.innerHTML = ST.staff.map(s=>`
+    <div class="staff-row" id="srow-${s.id}">
+      <div class="sav">${esc(s.name[0].toUpperCase())}</div>
+      <div class="sinfo">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sname" id="sname-${s.id}">${esc(s.name)}</div>
+          <div class="sname-edit" id="sedit-${s.id}">
+            <input class="sname-input" id="sinput-${s.id}" value="${escA(s.name)}"
+              onkeydown="if(event.key==='Enter')saveRename('${escA(s.id)}');if(event.key==='Escape')cancelRename('${escA(s.id)}')">
+          </div>
+        </div>
+        <div class="smeta">${s.hasCommission?'Commission: '+s.commissionPct+'%':'Fixed salary — no commission'}</div>
+      </div>
+      <div class="sactions">
+        <button class="btn btn-warn btn-sm" id="ebtn-${s.id}" onclick="startRename('${escA(s.id)}')">✏ Edit</button>
+        <button class="btn btn-acc btn-sm" id="sbtn-${s.id}" style="display:none" onclick="saveRename('${escA(s.id)}')">Save</button>
+        <div class="comm-tgl">
+          <span>Comm</span>
+          <div class="tgl tgl-sm ${s.hasCommission?'on':''}" id="ctgl-${s.id}" onclick="toggleComm('${escA(s.id)}',this)"></div>
+        </div>
+        <input class="comm-input" id="cpct-${s.id}" type="number" min="0" max="100" value="${s.commissionPct||40}"
+          style="display:${s.hasCommission?'block':'none'}" onchange="saveComm('${escA(s.id)}',this.value)">
+        <button class="btn btn-danger btn-sm" onclick="rmStaff('${escA(s.id)}','${escA(s.name)}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+function startRename(sid){
+  document.getElementById('sname-'+sid).style.display='none';
+  document.getElementById('sedit-'+sid).style.display='block';
+  document.getElementById('ebtn-'+sid).style.display='none';
+  document.getElementById('sbtn-'+sid).style.display='inline-flex';
+  document.getElementById('sinput-'+sid).focus();
+}
+function cancelRename(sid){
+  document.getElementById('sname-'+sid).style.display='block';
+  document.getElementById('sedit-'+sid).style.display='none';
+  document.getElementById('ebtn-'+sid).style.display='inline-flex';
+  document.getElementById('sbtn-'+sid).style.display='none';
+}
+async function saveRename(sid){
+  const nv = document.getElementById('sinput-'+sid).value.trim();
+  if(!nv){ toast('Name cannot be empty',true); return; }
+  try{
+    const d = await POST({action:'renameStaff',branchId:ST.cur.id,staffId:sid,newName:nv});
+    if(d.success){
+      await POST({action:'logAdminAction',adminId:ST.adminId,adminName:ST.adminName,branchId:ST.cur.id,action:'renameStaff',details:`${d.oldName||'Staff'} → ${nv}`});
+      toast((d.oldName||'Staff')+' renamed to '+nv+' ✓'); await loadStaff();
+    } else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+function toggleComm(sid,el){
+  el.classList.toggle('on');
+  const on = el.classList.contains('on');
+  const p  = document.getElementById('cpct-'+sid);
+  if(p) p.style.display = on?'block':'none';
+  saveCommDirect(sid, Number(p?p.value:40)||40, on);
+}
+function saveComm(sid,pct){
+  const t = document.getElementById('ctgl-'+sid);
+  saveCommDirect(sid, Number(pct)||40, t?t.classList.contains('on'):true);
+}
+async function saveCommDirect(sid,pct,has){
+  try{
+    const d = await POST({action:'updateStaffComm',branchId:ST.cur.id,staffId:sid,commissionPct:pct,hasCommission:has});
+    if(d.success) toast('Commission updated ✓'); else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+let _addingStaff=false; // LOCK: prevents double-submit
+async function addStaff(){
+  // STRICT guard — re-read values at call time, never trust stale state
+  const name = document.getElementById('ns-name').value.trim();
+  const pin  = document.getElementById('ns-pin').value.trim();
+  const comm = Number(document.getElementById('ns-comm').value)||40;
+  const hasc = document.getElementById('ns-tgl').classList.contains('on');
+  // Hard validation — if empty/invalid, abort silently (handles double-call with cleared fields)
+  if(!name || name.length<1){ toast('Enter staff name',true); return; }
+  if(pin.length!==4 || !/^\d{4}$/.test(pin)){ toast('PIN must be exactly 4 digits',true); return; }
+  // LOCK: prevent double submit (button click + Enter key + double tap)
+  if(_addingStaff){ return; }
+  _addingStaff=true;
+  const btn=document.getElementById('add-staff-btn');
+  if(btn){btn.classList.remove('ready');btn.classList.add('saving');btn.setAttribute('disabled','');btn.textContent='Saving...';}
+  const t=showSave('Adding '+name+'...','Saving to Google Sheet');
+  try{
+    const d = await POST({action:'addStaff',branchId:ST.cur.id,name,pin,commissionPct:comm,hasCommission:hasc});
+    hideSave(t);
+    if(d.success){
+      await POST({action:'logAdminAction',adminId:ST.adminId,adminName:ST.adminName,branchId:ST.cur.id,action:'addStaff',details:'Added: '+name});
+      toast(name+' added ✓');
+      ['ns-name','ns-pin','ns-comm'].forEach(id=>document.getElementById(id).value='');
+      if(btn){btn.classList.remove('saving');btn.classList.remove('ready');btn.setAttribute('disabled','');btn.textContent='+ Add to Branch';}
+      chkStaffForm();
+      await loadStaff();
+    } else { hideSave(t); toast('Error: '+d.error, true); }
+  }catch(ex){ hideSave(t); toast(ex.message, true); }
+  finally{ _addingStaff=false; } // always release lock
+  if(btn&&!btn.classList.contains('saving')){btn.classList.remove('saving');chkStaffForm();}
+}
+async function rmStaff(id,name){
+  if(!confirm('Remove '+name+'?\nThey will not appear in the tablet app.')) return;
+  try{
+    const d = await POST({action:'removeStaff',branchId:ST.cur.id,staffId:id});
+    if(d.success){
+      await POST({action:'logAdminAction',adminId:ST.adminId,adminName:ST.adminName,branchId:ST.cur.id,action:'removeStaff',details:'Removed: '+name});
+      toast(name+' removed ✓'); await loadStaff();
+    } else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+
+// ── SERVICES ──────────────────────────────────────────
+async function loadSvcs(){
+  if(!ST.cur) return;
+  try{ const d=await GET('getServices',ST.cur.id); if(d.success){ST.services=d.services||[];renderSvcs();} }catch(ex){}
+}
+function renderSvcs(){
+  document.getElementById('svc-tags').innerHTML = ST.services.length
+    ? ST.services.map((s,i)=>`<div class="stag">${esc(s.name)} <span style="color:var(--muted)">₹${s.price}</span><span class="rm" onclick="rmSvc(${i})">×</span></div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px">No services yet</div>';
+}
+function addSvc(){
+  const n=document.getElementById('new-sv-n').value.trim(), p=document.getElementById('new-sv-p').value;
+  if(!n||!p){ toast('Enter name and price',true); return; }
+  ST.services.push({name:n,price:Number(p)}); renderSvcs();
+  document.getElementById('new-sv-n').value=''; document.getElementById('new-sv-p').value='';
+  toast(n+' added — click Save to Sheet');
+}
+function rmSvc(i){ ST.services.splice(i,1); renderSvcs(); }
+async function saveSvcs(){
+  const btn=document.getElementById('save-svc-btn');
+  if(btn){btn.classList.remove('ready');btn.classList.add('saving');btn.setAttribute('disabled','');btn.textContent='Saving...';}
+  const t=showSave('Saving services...','Updating Google Sheet');
+  try{
+    const d=await POST({action:'updateServices',branchId:ST.cur.id,services:ST.services});
+    hideSave(t);
+    if(d.success){toast('Services saved ✓');}else toast('Error: '+d.error,true);
+  }catch(ex){hideSave(t);toast(ex.message,true);}
+  if(btn){btn.classList.add('ready');btn.removeAttribute('disabled');btn.textContent='Save to Sheet';}
+}
+
+// ── PRODUCTS ──────────────────────────────────────────
+async function loadProds(){
+  if(!ST.cur) return;
+  try{ const d=await GET('getProducts',ST.cur.id); if(d.success){ST.products=d.products||[];renderProds();} }catch(ex){}
+}
+function renderProds(){
+  document.getElementById('prod-tags').innerHTML = ST.products.length
+    ? ST.products.map((p,i)=>`<div class="stag" style="border-color:rgba(167,139,250,.2)">🧴 ${esc(p.name)} <span style="color:var(--muted)">₹${p.price}</span><span class="rm" onclick="rmProd(${i})">×</span></div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px">No products yet</div>';
+}
+function addProd(){
+  const n=document.getElementById('new-pd-n').value.trim(), p=document.getElementById('new-pd-p').value;
+  if(!n||!p){ toast('Enter name and price',true); return; }
+  ST.products.push({name:n,price:Number(p)}); renderProds();
+  document.getElementById('new-pd-n').value=''; document.getElementById('new-pd-p').value='';
+  toast(n+' added — click Save to Sheet');
+}
+function rmProd(i){ ST.products.splice(i,1); renderProds(); }
+async function saveProds(){
+  const btn=document.getElementById('save-prod-btn');
+  if(btn){btn.classList.remove('ready');btn.classList.add('saving');btn.setAttribute('disabled','');btn.textContent='Saving...';}
+  const t=showSave('Saving products...','Updating Google Sheet');
+  try{
+    const d=await POST({action:'updateProducts',branchId:ST.cur.id,products:ST.products});
+    hideSave(t);
+    if(d.success){toast('Products saved ✓');}else toast('Error: '+d.error,true);
+  }catch(ex){hideSave(t);toast(ex.message,true);}
+  if(btn){btn.classList.add('ready');btn.removeAttribute('disabled');btn.textContent='Save to Sheet';}
+}
+
+// ── REPORTS ───────────────────────────────────────────
+async function loadReports(){
+  if(!ST.cur) return;
+  document.getElementById('reports-body').innerHTML = '<tr><td colspan="6"><div class="ld"><div class="sp"></div></div></td></tr>';
+  try{
+    const filter = document.getElementById('rep-filter').value||'';
+    const d = await POST({action:'getReports', branchId:ST.cur.id, status:filter});
+    if(!d.success){ toast('Error: '+d.error,true); return; }
+    const reps = d.reports||[];
+    const pend = reps.filter(r=>r.Status==='Pending').length;
+    const res  = reps.filter(r=>r.Status&&r.Status.startsWith('Resolved')).length;
+    document.getElementById('rep-total').textContent    = reps.length;
+    document.getElementById('rep-pending').textContent  = pend;
+    document.getElementById('rep-resolved').textContent = res;
+    document.getElementById('rep-dup').textContent      = reps.filter(r=>r.ReportType==='duplicate').length;
+    document.getElementById('rep-mis').textContent      = reps.filter(r=>r.ReportType==='mismatch').length;
+    document.getElementById('rep-cus').textContent      = reps.filter(r=>r.ReportType==='custom').length;
+    const badge = document.getElementById('reports-badge');
+    if(pend>0){ badge.textContent=pend; badge.style.display='block'; } else badge.style.display='none';
+    if(!reps.length){
+      document.getElementById('reports-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">No reports found.</td></tr>';
+      return;
+    }
+    const tm = {duplicate:'Duplicate',mismatch:'Mismatch',custom:'Custom'};
+    const tb = {duplicate:'rt-dup',mismatch:'rt-mis',custom:'rt-cus'};
+    const sc = s=>{ if(!s||s==='Pending')return'st-pend'; if(s.startsWith('Resolved'))return'st-res'; return'st-ign'; };
+    document.getElementById('reports-body').innerHTML = reps.map(r=>{
+      const rid    = r.ReportID||'';
+      const ts     = String(r.Timestamp||'').split(' ')[0]||'—';
+      const isPend = !r.Status||r.Status==='Pending';
+      return `
+        <tr class="report-row ${r.ReportType||''}" style="cursor:pointer" onclick="toggleDetail('${escA(rid)}')">
+          <td>${esc(ts)}</td>
+          <td><strong>${esc(r.StaffName||'—')}</strong></td>
+          <td><span class="badge ${tb[r.ReportType]||'rt-cus'}">${esc(tm[r.ReportType]||r.ReportType||'—')}</span></td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.EntryDetails||'—')}</td>
+          <td><span class="badge ${sc(r.Status)}">${esc(r.Status||'Pending')}</span></td>
+          <td>${isPend?`
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();resolveRep('${escA(rid)}','delete_entry')">🗑 Delete</button>
+            <button class="btn btn-acc btn-sm" onclick="event.stopPropagation();resolveRep('${escA(rid)}','mark_valid')">✓ Valid</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();resolveRep('${escA(rid)}','ignored')">Ignore</button>
+          `:'<span style="color:var(--muted);font-size:11px">'+esc(r.ActionTaken||r.Status||'—')+'</span>'}</td>
+        </tr>
+        <tr><td colspan="6" style="padding:0">
+          <div class="report-detail" id="detail-${escA(rid)}">
+            <strong>Message:</strong> ${esc(r.Message||'—')}<br>
+            ${r.CorrectedValue?`<strong>Correction suggested:</strong> ${esc(r.CorrectedValue)}<br>`:''}
+            ${r.ResolvedBy?`<strong>Resolved by:</strong> ${esc(r.ResolvedBy)} at ${esc(r.ResolvedAt||'')}<br>`:''}
+            <strong>Entry ref:</strong> ${esc(r.EntryRowID||'—')}
+          </div>
+        </td></tr>`;
+    }).join('');
+  }catch(ex){ toast('Error: '+ex.message, true); }
+}
+function toggleDetail(rid){ const el=document.getElementById('detail-'+rid); if(el) el.classList.toggle('open'); }
+async function resolveRep(reportId,action){
+  const labels={delete_entry:'Delete the original entry?',mark_valid:'Mark as valid (keep entry)?',ignored:'Ignore this report?'};
+  if(!confirm(labels[action]||'Confirm?')) return;
+  try{
+    const d = await POST({action:'resolveReport',branchId:ST.cur.id,reportId,action,adminId:ST.adminId,adminName:ST.adminName,note:action});
+    if(d.success){ toast('Resolved: '+action+' ✓'); loadReports(); if(action==='delete_entry') loadToday(); }
+    else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+
+// ── SETTINGS ──────────────────────────────────────────
+async function loadEmail(){
+  if(!ST.cur) return;
+  try{
+    const d = await POST({action:'getReportEmails', branchId:ST.cur.id});
+    if(d.success){
+      const em = d.emails||[];
+      document.getElementById('email-1').value = em[0]||'';
+      document.getElementById('email-2').value = em[1]||'';
+      document.getElementById('email-3').value = em[2]||'';
+      const act = em.filter(Boolean);
+      document.getElementById('email-status').textContent = act.length?'Sending to: '+act.join(', '):'No recipients set.';
+    }
+  }catch(ex){}
+}
+async function saveEmails(){
+  const em = ['email-1','email-2','email-3'].map(id=>document.getElementById(id).value.trim()).filter(Boolean);
+  const te=showSave('Saving emails...','Updating Google Sheet');
+  try{
+    const d = await POST({action:'setReportEmails', branchId:ST.cur.id, emails:em});
+    hideSave(te);
+    if(d.success){ toast('Email recipients saved ✓'); document.getElementById('email-status').textContent=em.length?'Sending to: '+em.join(', '):'Reports disabled.'; }
+    else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+async function sendManualReport(type){
+  const st = document.getElementById('report-status');
+  st.textContent = 'Sending...';
+  try{
+    const d = await POST({action:'sendManualReport', branchId:ST.cur.id, type});
+    if(d.success){ toast((type==='monthly'?'Monthly':'Daily')+' report sent ✓'); st.textContent='Sent → '+d.recipients.join(', '); }
+    else{ toast('Error: '+d.error,true); st.textContent='Error: '+d.error; }
+  }catch(ex){ toast(ex.message,true); st.textContent='Error: '+ex.message; }
+}
+async function doRename(){
+  const nv = document.getElementById('rename-input').value.trim();
+  if(!nv){ toast('Enter a name',true); return; }
+  if(nv===ST.cur.name){ toast('Same name — no change'); return; }
+  try{
+    const d = await POST({action:'renameBranch', branchId:ST.cur.id, newName:nv});
+    if(d.success){
+      const old = ST.cur.name; ST.cur.name = nv;
+      ['bc1','bc2','bc3','bc4','bc5','bc6','bc7','bc-rep'].forEach(x=>{ const e=document.getElementById(x); if(e) e.textContent=nv; });
+      document.getElementById('today-title').innerHTML = esc(nv)+' <span class="live-dot"></span>';
+      document.getElementById('monthly-title').textContent = 'Monthly — '+nv;
+      document.getElementById('rename-status').textContent = `Renamed: "${old}" → "${nv}"`;
+      toast('Renamed ✓'); await loadBranches();
+    } else toast('Error: '+d.error, true);
+  }catch(ex){ toast(ex.message, true); }
+}
+async function fixBranchSheet(){
+  if(!ST.cur) return;
+  if(!confirm('Repair this branch\'s Google Sheet?\n\nSafe — will NOT delete any existing data.')) return;
+  const el = document.getElementById('fix-status');
+  el.textContent = 'Scanning and repairing...';
+  try{
+    const d = await POST({action:'fixBranch', branchId:ST.cur.id});
+    if(d.success){ toast('Sheet repaired ✓'); el.innerHTML='<strong style="color:var(--acc)">Done:</strong><br>'+(d.details||[]).join('<br>'); }
+    else{ toast('Error: '+d.error,true); el.textContent='Error: '+d.error; }
+  }catch(ex){ toast(ex.message,true); el.textContent='Error: '+ex.message; }
+}
+async function fixAllSheets(){
+  if(!confirm('Repair ALL branch Google Sheets?\n\nSafe — will NOT delete any existing data.')) return;
+  const el = document.getElementById('fix-status');
+  el.textContent = 'Scanning all branches...';
+  try{
+    const d = await POST({action:'fixAllBranches'});
+    if(d.success){
+      toast('All branches repaired ✓');
+      const html = (d.results||[]).map(r=>`<strong>${esc(r.branch)}:</strong> ${r.fixed?'✓':'❌'} ${(r.details||[]).join(', ')}`).join('<br>');
+      el.innerHTML = '<strong style="color:var(--acc)">All done:</strong><br>'+html;
+    } else{ toast('Error: '+d.error,true); el.textContent='Error: '+d.error; }
+  }catch(ex){ toast(ex.message,true); el.textContent='Error: '+ex.message; }
+}
+async function loadAdminLog(){
+  const el = document.getElementById('admin-log-body');
+  el.innerHTML = '<div class="ld"><div class="sp"></div></div>';
+  try{
+    const d = await POST({action:'getAdminLog'});
+    if(!d.success){ el.innerHTML='<div class="ld" style="color:var(--danger)">Error: '+esc(d.error)+'</div>'; return; }
+    const log = (d.log||[]).reverse().slice(0,50);
+    if(!log.length){ el.innerHTML='<div class="ld" style="color:var(--muted)">No admin actions logged yet.</div>'; return; }
+    el.innerHTML = log.map(r=>`
+      <div class="log-row">
+        <div class="log-time">${esc(r.Timestamp||'—')}</div>
+        <div class="log-who">${esc(r.AdminName||r.AdminID||'—')}</div>
+        <div style="flex:1">
+          <div class="log-action">${esc(r.Action||'—')}</div>
+          <div class="log-detail">${esc(r.Details||'')}</div>
+        </div>
+      </div>`).join('');
+  }catch(ex){ el.innerHTML='<div class="ld" style="color:var(--danger)">Error: '+esc(ex.message)+'</div>'; }
+}
+
+
+// ── SAVING OVERLAY ────────────────────────────────────
+function showSave(msg='Saving...', sub='Updating Google Sheet'){
+  const ov=document.getElementById('save-ov');
+  const m=document.getElementById('save-ov-msg');
+  const s=document.getElementById('save-ov-sub');
+  if(m)m.textContent=msg; if(s)s.textContent=sub;
+  if(ov)ov.classList.add('on');
+  // Slow internet warning after 5s
+  return setTimeout(()=>{if(s)s.textContent='Slow internet — still saving...';},5000);
+}
+function hideSave(timer){
+  clearTimeout(timer);
+  const ov=document.getElementById('save-ov');
+  if(ov)ov.classList.remove('on');
+}
+
+// ── SMART STAFF FORM VALIDATION ───────────────────────
+function chkStaffForm(){
+  const name=document.getElementById('ns-name').value.trim();
+  const pin=document.getElementById('ns-pin').value.trim();
+  const btn=document.getElementById('add-staff-btn');
+  if(!btn)return;
+  if(name.length>0 && pin.length===4){
+    btn.classList.add('ready');
+    btn.removeAttribute('disabled');
+  } else {
+    btn.classList.remove('ready');
+    btn.setAttribute('disabled','');
+  }
+}
+
+// ── UNIVERSAL REFRESH ─────────────────────────────────
+function doRefresh(page){
+  // Spin the refresh button
+  const btns=document.querySelectorAll('.btn-refresh');
+  btns.forEach(b=>{b.classList.add('spinning');setTimeout(()=>b.classList.remove('spinning'),500);});
+  if(!ST.cur) { loadBranches(); toast('Refreshed ✓','','info'); return; }
+  switch(page){
+    case 'today':
+    case 'entries':   loadToday(); break;
+    case 'monthly':   loadMonthly(); break;
+    case 'staff':     loadStaff(); break;
+    case 'services':  loadSvcs(); break;
+    case 'products':  loadProds(); break;
+    case 'reports':   loadReports(); break;
+    default:          loadBranches(); break;
+  }
+  toast('Refreshed ✓','','info');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function toast(msg,isErr,isInfo){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show'+(isErr?' err':isInfo?' info':'');
+  setTimeout(()=>t.className='toast', 3200);
+}
+</script>
+<div style="display:none" aria-hidden="true">one stop solutions - dlb | v24</div>
+</body>
+</html>

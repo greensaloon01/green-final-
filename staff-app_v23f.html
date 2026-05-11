@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Green Salon">
+<meta name="theme-color" content="#08090d">
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%2308090d'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='%2322d3a8' font-family='Arial'%3E%E2%9C%82%3C/text%3E%3C/svg%3E">
+<title>Green Salon</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ── */
+:root{
+  --bg:#08090d;--s1:#0f1117;--s2:#181922;--s3:#20212e;
+  --b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);
+  --acc:#22d3a8;--warn:#f59e0b;--danger:#f43f5e;--purple:#818cf8;
+  --txt:#eeeef5;--muted:#6b6b8a;--dim:#9898b8;
+  --cash:#22d3a8;--online:#818cf8;--upi:#fb923c;
+  --product:#a78bfa;--expense:#f43f5e;
+  --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
+
+/* ── TOP BAR ── */
+.bar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--s1);border-bottom:1px solid var(--b);z-index:10;min-height:52px}
+.bar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.5px;user-select:none}
+.bar-brand em{color:var(--acc);font-style:normal}
+.bar-mid{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--dim)}
+.branch-dot{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.bar-right{display:flex;align-items:center;gap:12px}
+.bar-time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.btn-change{padding:5px 12px;border-radius:8px;border:1px solid var(--b2);background:transparent;color:var(--dim);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;display:none}
+.btn-refresh{padding:5px 11px;border-radius:8px;border:1px solid var(--b2);background:transparent;color:var(--acc);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;transition:all .15s}
+.btn-refresh:active{transform:rotate(180deg);opacity:.7}
+.btn-logout{padding:4px 10px;border-radius:8px;border:1px solid rgba(244,63,94,.25);background:rgba(244,63,94,.06);color:var(--danger);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{background:rgba(244,63,94,.14)}
+
+/* ── SCREEN CONTAINER ── */
+.screens{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.scr{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding-bottom:72px}
+.scr.on{display:block;animation:fu .16s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* INNER WRAP — responsive padding */
+.inner{padding:16px;max-width:100%}
+@media(min-width:600px){.inner{padding:20px 24px}}
+@media(min-width:960px){.inner{padding:24px 32px}}
+@media(min-width:1200px){.inner{padding:28px 40px}}
+
+/* ── SETUP SCREEN ── */
+.setup-wrap{max-width:480px;margin:0 auto;padding:20px 0}
+.setup-icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--acc),var(--s2));border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:30px}
+.setup-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;text-align:center;margin-bottom:6px}
+.setup-sub{color:var(--muted);font-size:13px;line-height:1.6;text-align:center;margin-bottom:24px}
+.sf-lbl{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.sf-hint{font-size:11px;color:var(--muted);margin-top:-8px;margin-bottom:12px;line-height:1.5}
+.sf-hint code{background:var(--s3);padding:1px 5px;border-radius:4px;font-size:10px;color:var(--acc)}
+.sf-input,.sf-sel{width:100%;padding:12px 14px;background:var(--s2);border:1px solid var(--b);border-radius:var(--r);color:var(--txt);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.sf-input:focus,.sf-sel:focus{border-color:var(--acc)}.sf-input::placeholder{color:var(--muted)}.sf-sel option{background:var(--s2)}
+.url-preview{background:var(--s3);border:1px solid var(--b);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:11px;color:var(--dim);word-break:break-all;display:none}
+.url-preview.show{display:block}.url-preview span{color:var(--acc)}
+.btn-lock{width:100%;padding:15px;background:var(--acc);color:#08090d;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s;margin-top:4px}
+.btn-lock:active{opacity:.85}
+.setup-err{font-size:13px;text-align:center;margin-top:10px;min-height:18px}
+.setup-err.err{color:var(--danger)}.setup-err.ok{color:var(--acc)}.setup-err.info{color:var(--muted)}
+.setup-note{font-size:11px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.7;padding:11px 13px;background:var(--s2);border-radius:10px}.setup-note strong{color:var(--txt)}
+
+/* ── LANDING GRID ── */
+.summary-card{background:linear-gradient(135deg,rgba(34,211,168,.12),rgba(34,211,168,.04));border:1px solid rgba(34,211,168,.22);border-radius:16px;padding:16px 18px;margin-bottom:18px}
+.sum-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sum-label{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--acc)}
+.sum-date{font-size:11px;color:var(--muted)}
+.sum-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sum-stat-v{font-family:'Syne',sans-serif;font-size:24px;font-weight:700}
+.sum-stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+
+/* Staff grid — TABLET FIRST: 4-5 cols on wide, 2-3 on narrow */
+.grid-hdr{margin-bottom:14px}
+.grid-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.grid-sub{font-size:13px;color:var(--muted);margin-top:3px}
+.staff-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:14px;margin-bottom:22px
+}
+@media(min-width:600px){.staff-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}}
+@media(min-width:960px){.staff-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}}
+@media(min-width:1200px){.staff-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}}
+
+.scard{background:var(--s1);border:1px solid var(--b);border-radius:24px;padding:22px 14px;cursor:pointer;text-align:center;transition:all .15s;user-select:none;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;inset:0;background:var(--acc);opacity:0;transition:opacity .15s;border-radius:inherit}
+.scard:hover{border-color:rgba(34,211,168,.3);transform:translateY(-2px)}.scard:hover::before{opacity:.04}
+.scard:active{transform:scale(.95);border-color:var(--acc)}.scard:active::before{opacity:.08}
+.scard-av{width:68px;height:68px;border-radius:50%;margin:0 auto 12px;background:var(--s2);border:2px solid var(--b);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc);position:relative;z-index:1}
+.scard-name{font-size:15px;font-weight:600;position:relative;z-index:1}
+.scard-badge{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:20px;font-size:10px;position:relative;z-index:1}
+.scard-badge.comm{background:rgba(34,211,168,.12);color:var(--acc)}
+.scard-badge.nocomm{background:rgba(107,107,138,.12);color:var(--muted)}
+
+/* Global cards */
+.global-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
+.global-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:500px}
+@media(min-width:960px){.global-cards{max-width:600px}}
+.gcard{border-radius:18px;padding:18px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .15s;border:1px solid var(--b)}
+.gcard:hover{transform:translateY(-1px)}.gcard:active{transform:scale(.97)}
+.gcard.prod{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.25)}
+.gcard.exp{background:rgba(244,63,94,.07);border-color:rgba(244,63,94,.25)}
+.gcard-ic{font-size:28px;flex-shrink:0}
+.gcard-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.gcard.prod .gcard-name{color:var(--product)}.gcard.exp .gcard-name{color:var(--expense)}
+.gcard-desc{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── FORM SCREENS — two-column on tablet ── */
+.form-wrap{max-width:700px;margin:0 auto}
+@media(min-width:960px){
+  .form-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+}
+.back-btn{display:inline-flex;align-items:center;gap:7px;background:rgba(34,211,168,.1);color:var(--acc);border:1px solid rgba(34,211,168,.2);border-radius:9px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:18px;transition:all .13s;user-select:none}
+.back-btn:active{background:rgba(34,211,168,.2)}
+.back-btn svg{width:14px;height:14px;flex-shrink:0}
+
+.staff-bar{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--s1);border:1px solid var(--b);border-radius:16px;margin-bottom:22px}
+.sb-av{width:46px;height:46px;border-radius:50%;background:var(--s2);border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--acc);flex-shrink:0}
+.sb-av.prod-av{border-color:var(--product)}.sb-av.exp-av{border-color:var(--expense)}
+.sb-name{font-family:'Syne',sans-serif;font-weight:700;font-size:16px}
+.sb-date{font-size:12px;color:var(--muted);margin-top:2px}
+
+.flbl{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.fsec{margin-bottom:22px}
+
+/* Service/product chip grid — bigger on tablet */
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+@media(min-width:600px){.svc-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+@media(min-width:960px){.svc-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}}
+.chip{padding:11px 10px;border-radius:12px;border:1px solid var(--b);background:var(--s1);cursor:pointer;font-size:14px;font-weight:500;text-align:center;transition:all .12s;user-select:none}
+.chip .cp{font-size:11px;color:var(--muted);display:block;margin-top:3px}
+.chip.sel{border-color:var(--acc);background:rgba(34,211,168,.1);color:var(--acc)}
+.chip.sel .cp{color:rgba(34,211,168,.7)}
+.chip.sel-p{border-color:var(--product);background:rgba(167,139,250,.1);color:var(--product)}
+.chip:active{transform:scale(.95)}
+
+.div{display:flex;align-items:center;gap:9px;margin:14px 0}
+.div-line{flex:1;height:1px;background:var(--b)}.div-txt{font-size:11px;color:var(--muted)}
+.fi{width:100%;padding:13px 14px;background:var(--s1);border:1px solid var(--b);border-radius:var(--r);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--acc)}.fi::placeholder{color:var(--muted)}
+
+.amt-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.amt-row.one{grid-template-columns:1fr}
+.amt-wrap{position:relative}
+.rupee{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none}
+.amt-wrap .fi{padding-left:30px}
+
+/* Payment buttons — 3 big cols on tablet */
+.pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pbtn{padding:16px 8px;border-radius:var(--r);border:1px solid var(--b);background:var(--s1);cursor:pointer;font-size:14px;font-weight:500;text-align:center;transition:all .12s;user-select:none}
+.pbtn .pi{font-size:22px;display:block;margin-bottom:5px}.pbtn:active{transform:scale(.95)}
+.pbtn.pc{border-color:var(--cash);background:rgba(34,211,168,.1);color:var(--cash)}
+.pbtn.po{border-color:var(--online);background:rgba(129,140,248,.1);color:var(--online)}
+.pbtn.pu{border-color:var(--upi);background:rgba(251,146,60,.1);color:var(--upi)}
+
+/* Submit button */
+.sub-btn{width:100%;padding:18px;border-radius:14px;background:var(--acc);color:#08090d;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;border:none;cursor:pointer;transition:all .15s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.sub-btn.prod-clr{background:var(--product)}.sub-btn.exp-clr{background:var(--expense)}
+.sub-btn:active{opacity:.85;transform:scale(.98)}.sub-btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+
+/* ── MY LOG ── */
+.log-wrap{max-width:700px;margin:0 auto}
+.log-sum{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}
+@media(min-width:600px){.log-sum{grid-template-columns:repeat(4,1fr)}}
+.ls-card{background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:14px 16px}
+.ls-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.ls-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700}
+.ls-val.g{color:var(--acc)}.ls-val.y{color:var(--warn)}
+.log-actions{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.log-act-btn{padding:11px 16px;border-radius:10px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--txt);display:flex;align-items:center;gap:7px;transition:all .13s}
+.log-act-btn:active{transform:scale(.97)}
+.log-act-btn.csv{border-color:rgba(34,211,168,.3);color:var(--acc)}
+.log-act-btn.mail{border-color:rgba(129,140,248,.3);color:var(--purple)}
+
+/* Entry list */
+.elist{display:flex;flex-direction:column;gap:10px}
+.eitem{background:var(--s1);border:1px solid var(--b);border-radius:13px;padding:13px 16px;display:flex;align-items:center;gap:12px;transition:all .12s}
+.eitem:hover{border-color:var(--b2)}
+.edot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.edot.c{background:var(--cash)}.edot.o{background:var(--online)}.edot.u{background:var(--upi)}
+.einfo{flex:1;min-width:0}
+.esvc{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etime{font-size:12px;color:var(--muted);margin-top:2px}
+.eamt{text-align:right;flex-shrink:0}
+.eamt-v{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--acc)}
+.etip{font-size:11px;color:var(--warn);margin-top:2px}
+.report-btn{font-size:11px;color:var(--muted);padding:4px 9px;border:1px solid var(--b);border-radius:7px;cursor:pointer;white-space:nowrap;background:transparent;font-family:'DM Sans',sans-serif;transition:all .12s;flex-shrink:0}
+.report-btn:active{color:var(--danger);border-color:var(--danger)}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-ic{font-size:42px;margin-bottom:10px;opacity:.5}
+
+/* ── BOTTOM NAV — bigger for tablet ── */
+.bnav{flex-shrink:0;display:none;border-top:1px solid var(--b);background:var(--s1);padding-bottom:env(safe-area-inset-bottom,0)}
+.bnav.vis{display:flex}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px;cursor:pointer;color:var(--muted);font-size:12px;user-select:none;transition:color .12s}
+.ni.on{color:var(--acc)}.ni svg{width:22px;height:22px}
+
+/* ── REPORT MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;justify-content:center;z-index:600;padding:0}
+@media(min-width:600px){.modal-ov{align-items:center;padding:24px}}
+.modal-ov.open{display:flex;animation:mup .2s ease}
+@keyframes mup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.modal-box{background:var(--s1);border:1px solid var(--b2);border-radius:20px 20px 0 0;padding:22px 20px 30px;width:100%;max-width:540px}
+@media(min-width:600px){.modal-box{border-radius:20px;max-width:480px}}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.rtype-btn{padding:12px 14px;border-radius:12px;border:1px solid var(--b);background:var(--s2);cursor:pointer;text-align:left;transition:all .12s;margin-bottom:8px;width:100%;font-family:'DM Sans',sans-serif}
+.rtype-btn.sel{border-color:var(--acc);background:rgba(34,211,168,.07)}
+.rtype-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--txt)}
+.rtype-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.mfi{width:100%;padding:11px 13px;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--txt);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:10px;transition:border-color .2s;resize:vertical;min-height:72px}
+.mfi:focus{border-color:var(--acc)}.mfi::placeholder{color:var(--muted)}
+.modal-acts{display:flex;gap:10px;margin-top:6px}
+.btn-rsubmit{flex:1;padding:13px;background:var(--danger);color:#fff;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.btn-rsubmit:disabled{opacity:.4;cursor:not-allowed}
+.btn-rcancel{padding:13px 16px;background:transparent;border:1px solid var(--b2);color:var(--muted);border-radius:10px;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ── TOAST / LOADER ── */
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--acc);color:#08090d;padding:11px 22px;border-radius:50px;font-weight:600;font-size:14px;opacity:0;transition:all .26s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.err{background:var(--danger);color:#fff}
+.ld{display:flex;align-items:center;justify-content:center;padding:50px 20px;color:var(--muted);gap:9px}
+.sp{width:18px;height:18px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ver{position:fixed;bottom:2px;right:6px;font-size:9px;color:rgba(255,255,255,.05);pointer-events:none;user-select:none}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="bar">
+  <div class="bar-brand" id="brand-logo">Green <em>Salon</em></div>
+  <div class="bar-mid" id="bar-branch" style="display:none">
+    <div class="branch-dot"></div><span id="branch-name-top"></span>
+  </div>
+  <div class="bar-right">
+    <div class="bar-time" id="bar-time"></div>
+    <button class="btn-refresh" id="btn-refresh" onclick="doRefresh()" title="Refresh">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+    </button>
+    <button class="btn-logout" id="btn-logout" onclick="doLogout()" style="display:none" title="Logout">✕ Exit</button>
+    <button class="btn-change" id="btn-change" onclick="showChangeBranch()">⚙ Setup</button>
+  </div>
+</div>
+
+<div class="screens">
+
+<!-- SETUP -->
+<div class="scr on" id="s-setup">
+<div class="inner">
+  <div class="setup-wrap">
+    <div class="setup-icon">🔧</div>
+    <div class="setup-title">Setup This Tablet</div>
+    <div class="setup-sub">Owner does this once per tablet. After locking, staff always see the main panel.</div>
+    <label class="sf-lbl">Apps Script API URL</label>
+    <input class="sf-input" id="setup-url" type="text" placeholder="https://script.google.com/macros/s/.../exec" oninput="onUrlInput(this.value)">
+    <div class="sf-hint">From Apps Script → Deploy → Manage Deployments → copy URL ending in <code>/exec</code></div>
+    <div class="url-preview" id="url-preview">✓ URL: <span id="url-preview-text"></span></div>
+    <label class="sf-lbl">Select Branch</label>
+    <select class="sf-sel" id="setup-branch">
+      <option value="">-- Select branch --</option>
+      <option value="branch1">Branch 1</option>
+      <option value="branch2">Branch 2</option>
+      <option value="branch3">Branch 3</option>
+    </select>
+    <label class="sf-lbl">Branch Display Name</label>
+    <input class="sf-input" id="setup-bname" placeholder="e.g. JC Nagar Green Salon">
+    <label class="sf-lbl">Staff Email (for My Log email feature)</label>
+    <input class="sf-input" id="setup-email" type="email" placeholder="staff@gmail.com (optional)">
+    <button class="btn-lock" onclick="saveSetup()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Lock This Tablet to Branch
+    </button>
+    <div class="setup-err info" id="setup-err"></div>
+    <div class="setup-note"><strong>Owners only.</strong> Long-press logo 3 sec to return to this screen.</div>
+  </div>
+</div>
+</div>
+
+<!-- MAIN LANDING -->
+<div class="scr" id="s-grid">
+<div class="inner">
+  <div class="summary-card">
+    <div class="sum-top">
+      <span class="sum-label">📊 Today's Summary</span>
+      <span class="sum-date" id="sum-date"></span>
+    </div>
+    <div class="sum-stats">
+      <div><div class="sum-stat-v" id="sum-entries">—</div><div class="sum-stat-l">Entries</div></div>
+      <div><div class="sum-stat-v" id="sum-revenue">—</div><div class="sum-stat-l">Revenue</div></div>
+      <div><div class="sum-stat-v" id="sum-tips">—</div><div class="sum-stat-l">Tips</div></div>
+    </div>
+  </div>
+  <div class="grid-hdr">
+    <div class="grid-title">Who are you?</div>
+    <div class="grid-sub">Tap your name to add a service</div>
+  </div>
+  <div class="staff-grid" id="staff-grid"><div class="ld"><div class="sp"></div></div></div>
+  <div class="global-title">Branch Actions</div>
+  <div class="global-cards">
+    <div class="gcard prod" onclick="openGlobalForm('product')">
+      <div class="gcard-ic">🧴</div>
+      <div><div class="gcard-name">Product Sale</div><div class="gcard-desc">Branch-level product</div></div>
+    </div>
+    <div class="gcard exp" onclick="openGlobalForm('expense')">
+      <div class="gcard-ic">💸</div>
+      <div><div class="gcard-name">Expense</div><div class="gcard-desc">Branch expense</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SERVICE FORM -->
+<div class="scr" id="s-service">
+<div class="inner">
+  <div class="form-wrap">
+    <span class="back-btn" onclick="goGrid()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Back to Staff
+    </span>
+    <div class="staff-bar">
+      <div class="sb-av" id="sf-av"></div>
+      <div><div class="sb-name" id="sf-name"></div><div class="sb-date" id="sf-date"></div></div>
+    </div>
+    <div class="form-cols">
+      <div>
+        <div class="fsec">
+          <span class="flbl">Service</span>
+          <div class="svc-grid" id="svc-grid"><div class="ld"><div class="sp"></div></div></div>
+          <div class="div"><div class="div-line"></div><div class="div-txt">or type custom</div><div class="div-line"></div></div>
+          <input class="fi" id="custom-svc" placeholder="Custom service name..." oninput="onCustomSvc(this.value)">
+        </div>
+      </div>
+      <div>
+        <div class="fsec">
+          <span class="flbl">Amount &amp; Tip</span>
+          <div class="amt-row">
+            <div class="amt-wrap"><span class="rupee">₹</span><input type="number" class="fi" id="svc-amt" placeholder="0" inputmode="numeric" oninput="chkSvc()"></div>
+            <div class="amt-wrap"><span class="rupee">₹</span><input type="number" class="fi" id="svc-tip" placeholder="Tip (optional)" inputmode="numeric"></div>
+          </div>
+        </div>
+        <div class="fsec">
+          <span class="flbl">Payment Method</span>
+          <div class="pay-grid">
+            <div class="pbtn" id="sp-Cash" onclick="selPay('svc','Cash')"><span class="pi">💵</span>Cash</div>
+            <div class="pbtn" id="sp-Online" onclick="selPay('svc','Online')"><span class="pi">💳</span>Online</div>
+            <div class="pbtn" id="sp-UPI" onclick="selPay('svc','UPI')"><span class="pi">📱</span>UPI</div>
+          </div>
+        </div>
+        <button class="sub-btn" id="svc-sub" onclick="subService()" disabled>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Submit Service
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PRODUCT FORM -->
+<div class="scr" id="s-product">
+<div class="inner">
+  <div class="form-wrap">
+    <span class="back-btn" onclick="goGrid()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Back
+    </span>
+    <div class="staff-bar">
+      <div class="sb-av prod-av">🧴</div>
+      <div><div class="sb-name" style="color:var(--product)">Product Sale</div><div class="sb-date" id="pf-date"></div></div>
+    </div>
+    <div class="form-cols">
+      <div>
+        <div class="fsec">
+          <span class="flbl">Product</span>
+          <div class="svc-grid" id="prod-grid"><div class="ld"><div class="sp"></div></div></div>
+          <div class="div"><div class="div-line"></div><div class="div-txt">or type custom</div><div class="div-line"></div></div>
+          <input class="fi" id="custom-prod" placeholder="Custom product name..." oninput="onCustomProd(this.value)">
+        </div>
+      </div>
+      <div>
+        <div class="fsec">
+          <span class="flbl">Amount</span>
+          <div class="amt-row one"><div class="amt-wrap"><span class="rupee">₹</span><input type="number" class="fi" id="prod-amt" placeholder="0" inputmode="numeric" oninput="chkProd()"></div></div>
+        </div>
+        <div class="fsec">
+          <span class="flbl">Payment Method</span>
+          <div class="pay-grid">
+            <div class="pbtn" id="pp-Cash" onclick="selPay('prod','Cash')"><span class="pi">💵</span>Cash</div>
+            <div class="pbtn" id="pp-Online" onclick="selPay('prod','Online')"><span class="pi">💳</span>Online</div>
+            <div class="pbtn" id="pp-UPI" onclick="selPay('prod','UPI')"><span class="pi">📱</span>UPI</div>
+          </div>
+        </div>
+        <button class="sub-btn prod-clr" id="prod-sub" onclick="subProduct()" disabled>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Submit Product Sale
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- EXPENSE FORM -->
+<div class="scr" id="s-expense">
+<div class="inner">
+  <div class="form-wrap">
+    <span class="back-btn" onclick="goGrid()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Back
+    </span>
+    <div class="staff-bar">
+      <div class="sb-av exp-av">💸</div>
+      <div><div class="sb-name" style="color:var(--expense)">Branch Expense</div><div class="sb-date" id="xf-date"></div></div>
+    </div>
+    <div class="form-cols">
+      <div>
+        <div class="fsec">
+          <span class="flbl">Description</span>
+          <input class="fi" id="exp-desc" placeholder="e.g. Towels, electricity..." oninput="chkExp()">
+        </div>
+        <div class="fsec">
+          <span class="flbl">Amount</span>
+          <div class="amt-row one"><div class="amt-wrap"><span class="rupee">₹</span><input type="number" class="fi" id="exp-amt" placeholder="0" inputmode="numeric" oninput="chkExp()"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="fsec">
+          <span class="flbl">Payment Method</span>
+          <div class="pay-grid">
+            <div class="pbtn" id="xp-Cash" onclick="selPay('exp','Cash')"><span class="pi">💵</span>Cash</div>
+            <div class="pbtn" id="xp-Online" onclick="selPay('exp','Online')"><span class="pi">💳</span>Online</div>
+            <div class="pbtn" id="xp-UPI" onclick="selPay('exp','UPI')"><span class="pi">📱</span>UPI</div>
+          </div>
+        </div>
+        <button class="sub-btn exp-clr" id="exp-sub" onclick="subExpense()" disabled>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Submit Expense
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MY LOG -->
+<div class="scr" id="s-log">
+<div class="inner">
+  <div class="log-wrap">
+    <span class="back-btn" onclick="goGrid()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Back to Staff
+    </span>
+    <div class="grid-hdr" style="margin-bottom:16px">
+      <div class="grid-title" id="log-title">My Log</div>
+      <div class="grid-sub" id="log-sub">Today's entries</div>
+    </div>
+    <div class="log-sum">
+      <div class="ls-card"><div class="ls-lbl">Revenue</div><div class="ls-val g" id="log-svc">₹0</div></div>
+      <div class="ls-card"><div class="ls-lbl">Tips</div><div class="ls-val y" id="log-tip">₹0</div></div>
+    </div>
+    <div class="log-actions">
+      <button class="log-act-btn csv" onclick="downloadCSV()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download CSV
+      </button>
+      <button class="log-act-btn mail" onclick="emailLog()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send Email
+      </button>
+      <button class="log-act-btn" onclick="openSvcForm()" style="border-color:rgba(34,211,168,.3);color:var(--acc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Add Another
+      </button>
+    </div>
+    <div id="elist"><div class="ld"><div class="sp"></div></div></div>
+  </div>
+</div>
+</div>
+
+</div><!-- /screens -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav" id="bnav">
+  <div class="ni on" id="ni-add" onclick="switchTab('add')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Add Service
+  </div>
+  <div class="ni" id="ni-log" onclick="switchTab('log')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>My Log
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-ov" id="report-modal" onclick="if(this===event.target)closeReportModal()">
+  <div class="modal-box">
+    <div class="modal-title">⚠ Report Issue</div>
+    <div class="modal-sub" id="report-entry-info">Entry details</div>
+    <button class="rtype-btn" onclick="selectReportType('duplicate',this)">
+      <div class="rtype-name">🔁 Duplicate Entry</div>
+      <div class="rtype-desc">This entry was added twice by mistake</div>
+    </button>
+    <button class="rtype-btn" onclick="selectReportType('mismatch',this)">
+      <div class="rtype-name">❌ Mismatched Entry</div>
+      <div class="rtype-desc">Wrong service or wrong amount</div>
+    </button>
+    <button class="rtype-btn" onclick="selectReportType('custom',this)">
+      <div class="rtype-name">💬 Custom Complaint</div>
+      <div class="rtype-desc">Any other issue — describe below</div>
+    </button>
+    <div id="report-extra" style="display:none;margin-top:10px">
+      <textarea class="mfi" id="report-msg" placeholder="Describe the issue..."></textarea>
+      <input class="fi" id="report-corrected" placeholder="Correct value e.g. Haircut ₹150" style="display:none;margin-bottom:10px">
+    </div>
+    <div class="modal-acts">
+      <button class="btn-rsubmit" id="btn-rsubmit" onclick="submitReport()" disabled>Submit Report</button>
+      <button class="btn-rcancel" onclick="closeReportModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid rgba(34,211,168,.3);padding:14px 20px;z-index:998;align-items:center;gap:12px">
+  <div style="flex:1">
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--acc)">📲 Add to Home Screen</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">Install for full-screen tablet experience</div>
+  </div>
+  <button onclick="installPWA()" style="padding:10px 18px;background:var(--acc);color:#08090d;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">Install</button>
+  <button onclick="document.getElementById('install-banner').style.display='none'" style="padding:10px 13px;background:transparent;border:1px solid var(--b2);color:var(--muted);border-radius:10px;font-size:13px;cursor:pointer;flex-shrink:0">✕</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SAVING OVERLAY — instant visual feedback -->
+<div id="save-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,9,13,.88);z-index:800;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(4px)">
+  <div style="width:52px;height:52px;border:3px solid rgba(34,211,168,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .6s linear infinite"></div>
+  <div id="save-msg" style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--acc)">Saving...</div>
+  <div id="save-sub" style="font-size:12px;color:var(--muted)">Please wait — sending to Google Sheet</div>
+</div>
+<div class="ver">one stop solutions - dlb | v23</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// GREEN SALON STAFF APP v23
+// v23: refresh + logout + auto-goGrid + saving overlay
+// one stop solutions - dlb
+// ══════════════════════════════════════════════════════
+document.addEventListener('contextmenu',e=>e.preventDefault());
+
+const LS_URL='gs_url',LS_BID='gs_bid',LS_BN='gs_bname',LS_LOCKED='gs_locked',LS_EMAIL='gs_email';
+const lsGet=k=>localStorage.getItem(k)||'';
+const lsSet=(k,v)=>localStorage.setItem(k,v);
+
+let cfg={url:lsGet(LS_URL),bid:lsGet(LS_BID),bname:lsGet(LS_BN),email:lsGet(LS_EMAIL)};
+const locked=lsGet(LS_LOCKED)==='yes';
+
+const S={
+  staff:[],services:[],products:[],sel:null,
+  svcSvc:null,svcPay:null,svcSelIdx:-1,
+  prodProd:null,prodPay:null,prodSelIdx:-1,
+  expPay:null,
+  logData:null,
+  reportEntry:null,reportType:null
+};
+
+// ── BOOT ──────────────────────────────────────────────
+window.onload=()=>{
+  tick();setInterval(tick,30000);fillDates();
+  if(cfg.url&&cfg.bid&&cfg.bname&&locked){showBranchTag();boot();}
+  else show('s-setup');
+  // Long-press logo 3s → show setup button
+  let pt;
+  const logo=document.getElementById('brand-logo');
+  logo.addEventListener('touchstart',()=>{pt=setTimeout(()=>document.getElementById('btn-change').style.display='block',3000);},{passive:true});
+  logo.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
+  logo.addEventListener('touchmove',()=>clearTimeout(pt),{passive:true});
+  // Ctrl+Shift+O → setup (desktop/owner access)
+  document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key==='O')showChangeBranch();});
+};
+
+function tick(){document.getElementById('bar-time').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}
+function fillDates(){
+  const d=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  ['sf-date','pf-date','xf-date'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=d;});
+  document.getElementById('sum-date').textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// ── API ────────────────────────────────────────────────
+async function GET(a){
+  const r=await fetch(`${cfg.url}?action=${a}&branchId=${encodeURIComponent(cfg.bid)}`);
+  const ct=r.headers.get('content-type')||'';
+  if(!ct.includes('json')&&!ct.includes('plain'))throw new Error('API error — check deployment settings');
+  return r.json();
+}
+async function POST(b){
+  // Show slow-connection warning after 4s
+  let slowTimer=null;
+  const overlay=document.getElementById('save-overlay');
+  if(overlay&&overlay.style.display==='flex'){
+    slowTimer=setTimeout(()=>{
+      const sub=document.getElementById('save-sub');
+      if(sub)sub.textContent='Slow internet — still trying...';
+    },4000);
+  }
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),28000);
+    const r=await fetch(cfg.url,{method:'POST',body:JSON.stringify({...b,branchId:cfg.bid}),signal:controller.signal});
+    clearTimeout(timeout);
+    if(slowTimer)clearTimeout(slowTimer);
+    const ct=r.headers.get('content-type')||'';
+    if(!ct.includes('json')&&!ct.includes('plain'))throw new Error('API error — check deployment settings');
+    return r.json();
+  }catch(ex){
+    if(slowTimer)clearTimeout(slowTimer);
+    if(ex.name==='AbortError')throw new Error('Request timed out — check internet connection');
+    throw ex;
+  }
+}
+
+// ── URL VALIDATE ───────────────────────────────────────
+function sanitiseUrl(raw){
+  let url=raw.trim().replace(/[\r\n\t]/g,'');
+  if(url.startsWith('AKfycb'))url='https://script.google.com/macros/s/'+url+'/exec';
+  if(url.includes('googleusercontent.com'))return null;
+  if(!url.startsWith('https://script.google.com'))return null;
+  if(!url.endsWith('/exec')){url=url.replace(/\/+$/,'')+'/exec';}
+  return url;
+}
+function onUrlInput(raw){
+  const cl=sanitiseUrl(raw),prev=document.getElementById('url-preview'),pt=document.getElementById('url-preview-text'),err=document.getElementById('setup-err');
+  if(!raw.trim()){prev.classList.remove('show');err.textContent='';return;}
+  if(raw.includes('googleusercontent.com')){prev.classList.remove('show');err.textContent='⚠️ Wrong URL — use Apps Script → Deploy → Manage Deployments';err.className='setup-err err';return;}
+  if(cl){pt.textContent=cl;prev.classList.add('show');err.textContent='✓ URL looks correct';err.className='setup-err ok';}
+  else{prev.classList.remove('show');err.textContent='⚠️ Must start with https://script.google.com';err.className='setup-err err';}
+}
+
+// ── SETUP ──────────────────────────────────────────────
+function showChangeBranch(){
+  document.getElementById('setup-url').value=cfg.url||'';
+  document.getElementById('setup-branch').value=cfg.bid||'';
+  document.getElementById('setup-bname').value=cfg.bname||'';
+  document.getElementById('setup-email').value=cfg.email||'';
+  if(cfg.url)onUrlInput(cfg.url);
+  document.getElementById('setup-err').textContent='Update settings and lock again.';
+  document.getElementById('setup-err').className='setup-err info';
+  document.getElementById('bnav').classList.remove('vis');
+  show('s-setup');
+}
+async function saveSetup(){
+  const rawUrl=document.getElementById('setup-url').value;
+  const bid=document.getElementById('setup-branch').value;
+  const bn=document.getElementById('setup-bname').value.trim();
+  const email=document.getElementById('setup-email').value.trim();
+  const errEl=document.getElementById('setup-err');
+  errEl.className='setup-err err';
+  if(!rawUrl.trim()){errEl.textContent='Enter API URL';return;}
+  if(!bid){errEl.textContent='Select a branch';return;}
+  if(!bn){errEl.textContent='Enter branch display name';return;}
+  const url=sanitiseUrl(rawUrl);
+  if(!url){errEl.textContent=rawUrl.includes('googleusercontent.com')?'❌ Wrong URL format':'❌ Must start with https://script.google.com';return;}
+  errEl.className='setup-err info';errEl.textContent='Connecting to Google Sheets...';
+  try{
+    const r=await fetch(`${url}?action=getStaff&branchId=${bid}`);
+    const ct=r.headers.get('content-type')||'';
+    if(!ct.includes('json')&&!ct.includes('plain'))throw new Error('Server returned HTML — check "Execute as Me" and "Anyone" access in deployment');
+    const d=await r.json();
+    if(!d.success)throw new Error(d.error||'Server error');
+    lsSet(LS_URL,url);lsSet(LS_BID,bid);lsSet(LS_BN,bn);lsSet(LS_LOCKED,'yes');lsSet(LS_EMAIL,email);
+    cfg={url,bid,bname:bn,email};
+    showBranchTag();
+    S.staff=d.staff||[];
+    renderGrid();
+    await loadServices();await loadProducts();
+    loadSummary();
+    show('s-grid');
+    document.getElementById('bnav').classList.remove('vis');
+    document.getElementById('btn-change').style.display='none';
+    toast('✓ Tablet locked to '+bn);
+    const rb=document.getElementById('btn-refresh');if(rb)rb.style.display='flex';
+  }catch(ex){
+    errEl.className='setup-err err';
+    errEl.textContent='❌ '+(ex.message.includes('JSON')||ex.message.includes('DOCTYPE')?'Connection failed — ensure "Anyone" access and URL ends with /exec':ex.message);
+  }
+}
+function showBranchTag(){document.getElementById('branch-name-top').textContent=cfg.bname;document.getElementById('bar-branch').style.display='flex';}
+
+// ── BOOT LOAD ─────────────────────────────────────────
+async function boot(){
+  try{await loadStaff();await loadServices();await loadProducts();loadSummary();show('s-grid');
+    // Show refresh button once loaded
+    const rb=document.getElementById('btn-refresh');if(rb)rb.style.display='flex';
+  }
+  catch(ex){toast('Load error: '+ex.message,true);show('s-setup');}
+}
+async function loadStaff(){const d=await GET('getStaff');if(d.success){S.staff=d.staff||[];renderGrid();}}
+async function loadServices(){
+  try{const d=await GET('getServices');if(d.success)S.services=d.services||[];}
+  catch(ex){S.services=[{name:'Haircut',price:150},{name:'Shave',price:80},{name:'Facial',price:300},{name:'Hair Colour',price:500},{name:'Head Massage',price:100},{name:'Beard Trim',price:60},{name:'Threading',price:40},{name:'Waxing',price:200}];}
+}
+async function loadProducts(){
+  try{const d=await GET('getProducts');if(d.success)S.products=d.products||[];}
+  catch(ex){S.products=[{name:'Shampoo',price:200},{name:'Hair Oil',price:150},{name:'Conditioner',price:180},{name:'Hair Serum',price:250}];}
+}
+
+// ── SUMMARY CARD ───────────────────────────────────────
+async function loadSummary(){
+  try{
+    const d=await POST({action:'getBranchSummary'});
+    if(d.success){
+      document.getElementById('sum-entries').textContent=d.totalEntries||0;
+      document.getElementById('sum-revenue').textContent='₹'+(d.totalRevenue||0);
+      document.getElementById('sum-tips').textContent='₹'+(d.totalTips||0);
+    }
+  }catch(ex){}
+}
+
+// ── STAFF GRID ────────────────────────────────────────
+function renderGrid(){
+  const g=document.getElementById('staff-grid');
+  if(!S.staff.length){
+    g.innerHTML='<div class="ld" style="grid-column:1/-1;flex-direction:column;gap:12px;color:var(--muted)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div>No staff yet. Add from Owner Panel.</div></div>';
+    return;
+  }
+  g.innerHTML=S.staff.map(s=>`
+    <div class="scard" onclick="selStaff('${s.id}')">
+      <div class="scard-av">${esc(s.name[0].toUpperCase())}</div>
+      <div class="scard-name">${esc(s.name)}</div>
+      <span class="scard-badge ${s.hasCommission?'comm':'nocomm'}">${s.hasCommission?'Commission':'Fixed'}</span>
+    </div>`).join('');
+}
+
+// ── SELECT STAFF ───────────────────────────────────────
+function selStaff(id){
+  S.sel=S.staff.find(s=>s.id===id);if(!S.sel)return;
+  document.getElementById('sf-av').textContent=S.sel.name[0].toUpperCase();
+  document.getElementById('sf-name').textContent=S.sel.name;
+  fillDates();
+  openSvcForm();
+  document.getElementById('bnav').classList.add('vis');
+  document.getElementById('ni-add').classList.add('on');
+  document.getElementById('ni-log').classList.remove('on');
+  // Show logout button when staff session active
+  const lb=document.getElementById('btn-logout');if(lb)lb.style.display='block';
+}
+function goGrid(){
+  S.sel=null;
+  show('s-grid');
+  document.getElementById('bnav').classList.remove('vis');
+  // Hide logout when back on grid
+  const lb=document.getElementById('btn-logout');if(lb)lb.style.display='none';
+  loadStaff();loadSummary();
+}
+
+// ── SERVICE FORM ───────────────────────────────────────
+function openSvcForm(){
+  S.svcSvc=null;S.svcPay=null;S.svcSelIdx=-1;
+  document.getElementById('svc-amt').value='';
+  document.getElementById('svc-tip').value='';
+  document.getElementById('custom-svc').value='';
+  document.querySelectorAll('#s-service .pbtn').forEach(b=>b.className='pbtn');
+  renderServices();chkSvc();show('s-service');
+}
+// Use data-idx to avoid broken DOM IDs from special chars in service names
+function renderServices(){
+  document.getElementById('svc-grid').innerHTML=S.services.map((s,i)=>
+    `<div class="chip" data-idx="${i}" onclick="selSvc(${i})">${esc(s.name)}<span class="cp">₹${s.price}</span></div>`
+  ).join('');
+}
+function selSvc(idx){
+  const s=S.services[idx];if(!s)return;
+  S.svcSvc=s.name;S.svcSelIdx=idx;
+  document.getElementById('custom-svc').value='';
+  document.querySelectorAll('#svc-grid .chip').forEach(c=>c.classList.remove('sel'));
+  const chip=document.querySelector(`#svc-grid .chip[data-idx="${idx}"]`);
+  if(chip)chip.classList.add('sel');
+  document.getElementById('svc-amt').value=s.price;
+  chkSvc();
+}
+function onCustomSvc(v){
+  S.svcSvc=v.trim()||null;S.svcSelIdx=-1;
+  document.querySelectorAll('#svc-grid .chip').forEach(c=>c.classList.remove('sel'));
+  chkSvc();
+}
+function chkSvc(){document.getElementById('svc-sub').disabled=!(S.svcSvc&&document.getElementById('svc-amt').value>0&&S.svcPay);}
+
+// ── GLOBAL PRODUCT / EXPENSE ───────────────────────────
+function openGlobalForm(type){
+  if(type==='product'){
+    S.prodProd=null;S.prodPay=null;S.prodSelIdx=-1;
+    document.getElementById('prod-amt').value='';
+    document.getElementById('custom-prod').value='';
+    document.querySelectorAll('#s-product .pbtn').forEach(b=>b.className='pbtn');
+    renderProducts();chkProd();show('s-product');
+  }else{
+    S.expPay=null;
+    document.getElementById('exp-desc').value='';
+    document.getElementById('exp-amt').value='';
+    document.querySelectorAll('#s-expense .pbtn').forEach(b=>b.className='pbtn');
+    chkExp();show('s-expense');
+  }
+}
+function renderProducts(){
+  document.getElementById('prod-grid').innerHTML=S.products.map((p,i)=>
+    `<div class="chip" data-pidx="${i}" onclick="selProd(${i})">${esc(p.name)}<span class="cp">₹${p.price}</span></div>`
+  ).join('');
+}
+function selProd(idx){
+  const p=S.products[idx];if(!p)return;
+  S.prodProd=p.name;S.prodSelIdx=idx;
+  document.getElementById('custom-prod').value='';
+  document.querySelectorAll('#prod-grid .chip').forEach(c=>c.classList.remove('sel-p'));
+  const chip=document.querySelector(`#prod-grid .chip[data-pidx="${idx}"]`);
+  if(chip)chip.classList.add('sel-p');
+  document.getElementById('prod-amt').value=p.price;
+  chkProd();
+}
+function onCustomProd(v){
+  S.prodProd=v.trim()||null;S.prodSelIdx=-1;
+  document.querySelectorAll('#prod-grid .chip').forEach(c=>c.classList.remove('sel-p'));
+  chkProd();
+}
+function chkProd(){document.getElementById('prod-sub').disabled=!(S.prodProd&&document.getElementById('prod-amt').value>0&&S.prodPay);}
+function chkExp(){document.getElementById('exp-sub').disabled=!(document.getElementById('exp-desc').value.trim()&&document.getElementById('exp-amt').value>0&&S.expPay);}
+
+function selPay(pre,m){
+  if(pre==='svc'){S.svcPay=m;chkSvc();}
+  else if(pre==='prod'){S.prodPay=m;chkProd();}
+  else{S.expPay=m;chkExp();}
+  const cls=m==='Cash'?'pc':m==='Online'?'po':'pu';
+  const pfx={svc:'sp',prod:'pp',exp:'xp'};
+  ['Cash','Online','UPI'].forEach(pm=>{const e=document.getElementById(pfx[pre]+'-'+pm);if(e)e.className='pbtn';});
+  const el=document.getElementById(pfx[pre]+'-'+m);if(el)el.classList.add(cls);
+}
+
+// ── SUBMIT — then go straight to My Log ───────────────
+async function subService(){
+  const btn=document.getElementById('svc-sub');
+  btn.disabled=true;
+  // Show overlay IMMEDIATELY — before network call
+  showSaving('Saving '+S.svcSvc+'...');
+  try{
+    const d=await POST({action:'submitEntry',staffId:S.sel.id,staffName:S.sel.name,
+      service:S.svcSvc,amount:document.getElementById('svc-amt').value,
+      tip:document.getElementById('svc-tip').value||0,paymentMethod:S.svcPay});
+    hideSaving();
+    if(d.success){
+      toast('✓ '+S.svcSvc+' saved!');
+      loadSummary(); // fire and forget — non-blocking
+      goGrid(); // back to staff grid immediately
+    }else{toast('Error: '+(d.error||'unknown'),true);}
+  }catch(ex){hideSaving();toast('⚠ '+(ex.message.includes('timed out')?'Slow internet — try again':ex.message),true);}
+  btn.disabled=false;
+  btn.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Submit Service';
+  chkSvc();
+}
+
+async function subProduct(){
+  const btn=document.getElementById('prod-sub');
+  btn.disabled=true;
+  showSaving('Saving Product...');
+  try{
+    const d=await POST({action:'submitProduct',product:S.prodProd,amount:document.getElementById('prod-amt').value,paymentMethod:S.prodPay});
+    hideSaving();
+    if(d.success){toast('✓ Product saved!');loadSummary();goGrid();}
+    else{toast('Error: '+(d.error||'unknown'),true);}
+  }catch(ex){hideSaving();toast('⚠ '+(ex.message.includes('timed out')?'Slow internet — try again':ex.message),true);}
+  btn.disabled=false;
+  btn.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Submit Product Sale';
+  chkProd();
+}
+
+async function subExpense(){
+  const btn=document.getElementById('exp-sub');
+  const desc=document.getElementById('exp-desc').value.trim();
+  const amt=document.getElementById('exp-amt').value;
+  btn.disabled=true;
+  showSaving('Saving Expense...');
+  try{
+    const d=await POST({action:'submitExpense',description:desc,amount:amt,paymentMethod:S.expPay});
+    hideSaving();
+    if(d.success){toast('✓ Expense saved!');loadSummary();goGrid();}
+    else{toast('Error: '+(d.error||'unknown'),true);}
+  }catch(ex){hideSaving();toast('⚠ '+(ex.message.includes('timed out')?'Slow internet — try again':ex.message),true);}
+  btn.disabled=false;
+  btn.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Submit Expense';
+  chkExp();
+}
+
+// ── MY LOG ─────────────────────────────────────────────
+// goToLog — called after submit; loads log and shows screen
+function goToLog(){
+  show('s-log');
+  document.getElementById('ni-add').classList.remove('on');
+  document.getElementById('ni-log').classList.add('on');
+  loadLog();
+}
+
+async function loadLog(){
+  if(!S.sel)return;
+  document.getElementById('elist').innerHTML='<div class="ld"><div class="sp"></div> Loading...</div>';
+  try{
+    // FIX: explicitly pass staffId; branchId auto-injected by POST()
+    const d=await POST({action:'getMyEntries',staffId:S.sel.id});
+    if(d.success){S.logData=d;renderLog(d);}
+    else document.getElementById('elist').innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><div>Error: '+esc(d.error||'unknown')+'</div></div>';
+  }catch(ex){
+    document.getElementById('elist').innerHTML='<div class="empty"><div class="empty-ic">📋</div><div>Could not load entries</div></div>';
+  }
+}
+
+function renderLog(d){
+  if(!S.sel)return;
+  document.getElementById('log-title').textContent=S.sel.name+"'s Log";
+  const tot=(d.entries||[]).length;
+  document.getElementById('log-sub').textContent=tot+' entr'+(tot!==1?'ies':'y')+' today · tap ⚠ to report an issue';
+  document.getElementById('log-svc').textContent='₹'+(d.totalAmount||0);
+  document.getElementById('log-tip').textContent='₹'+(d.totalTip||0);
+  const el=document.getElementById('elist');
+  if(!tot){el.innerHTML='<div class="empty"><div class="empty-ic">📋</div><div>No entries yet today</div></div>';return;}
+  el.innerHTML=d.entries.map(e=>{
+    const dc=e.paymentMethod==='Cash'?'c':e.paymentMethod==='UPI'?'u':'o';
+    // Show full timestamp (date + time) in my log
+    const ts=String(e.timestamp||'');
+    const timePart=ts.split(' ')[1]||ts.substring(0,8)||'';
+    const datePart=ts.split(' ')[0]||'';
+    return`<div class="eitem">
+      <div class="edot ${dc}"></div>
+      <div class="einfo">
+        <div class="esvc">${esc(e.service)}</div>
+        <div class="etime">${esc(datePart)} ${esc(timePart)} · ${e.paymentMethod}</div>
+      </div>
+      <div class="eamt">
+        <div class="eamt-v">₹${e.amount}</div>
+        ${Number(e.tip)>0?`<div class="etip">+₹${e.tip} tip</div>`:''}
+      </div>
+      <button class="report-btn" onclick="openReportModal(event,'${e.rowId}',${JSON.stringify(String(e.service))},${e.amount})">⚠ Report</button>
+    </div>`;
+  }).join('');
+}
+
+// ── REPORT MODAL ───────────────────────────────────────
+function openReportModal(evt,rowId,service,amount){
+  evt.stopPropagation();
+  S.reportEntry={rowId,service,amount};S.reportType=null;
+  document.getElementById('report-entry-info').textContent=service+' — ₹'+amount;
+  document.getElementById('report-extra').style.display='none';
+  document.getElementById('report-corrected').style.display='none';
+  document.getElementById('report-msg').value='';
+  document.getElementById('report-corrected').value='';
+  document.querySelectorAll('.rtype-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('btn-rsubmit').disabled=true;
+  document.getElementById('report-modal').classList.add('open');
+}
+function selectReportType(type,el){
+  S.reportType=type;
+  document.querySelectorAll('.rtype-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');
+  document.getElementById('report-extra').style.display='block';
+  const corr=document.getElementById('report-corrected');
+  corr.style.display=type==='mismatch'?'block':'none';
+  document.getElementById('report-msg').placeholder=type==='duplicate'?'Add note (optional)':type==='mismatch'?'What went wrong?':'Describe the issue...';
+  document.getElementById('btn-rsubmit').disabled=false;
+}
+async function submitReport(){
+  if(!S.reportEntry||!S.reportType)return;
+  const btn=document.getElementById('btn-rsubmit');btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    const d=await POST({action:'submitReport',
+      staffId:S.sel?S.sel.id:'',staffName:S.sel?S.sel.name:'',
+      entryRowId:S.reportEntry.rowId,entryDetails:S.reportEntry.service+' ₹'+S.reportEntry.amount,
+      reportType:S.reportType,message:document.getElementById('report-msg').value.trim(),
+      correctedValue:document.getElementById('report-corrected').value.trim()});
+    if(d.success){toast('Report submitted ✓ Admin will review');closeReportModal();}
+    else toast('Error: '+(d.error||'unknown'),true);
+  }catch(ex){toast('Error: '+ex.message,true);}
+  btn.disabled=false;btn.textContent='Submit Report';
+}
+function closeReportModal(){document.getElementById('report-modal').classList.remove('open');}
+
+// ── DOWNLOAD / EMAIL ───────────────────────────────────
+function downloadCSV(){
+  if(!S.sel||!S.logData||!S.logData.entries||!S.logData.entries.length){toast('No entries to download',true);return;}
+  const rows=[['DateTime','Service','Amount','Tip','Payment']];
+  S.logData.entries.forEach(e=>rows.push([e.timestamp||'',e.service||'',e.amount||0,e.tip||0,e.paymentMethod||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;
+  a.download=`${S.sel.name}_Log_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();URL.revokeObjectURL(url);toast('CSV downloaded ✓');
+}
+function emailLog(){
+  if(!S.sel||!S.logData||!S.logData.entries||!S.logData.entries.length){toast('No entries to email',true);return;}
+  const email=cfg.email||'';if(!email){toast('No email set in Setup',true);return;}
+  const dt=new Date().toLocaleDateString('en-IN');
+  let body=`My Log — ${S.sel.name} — ${dt}\n\nRevenue: ₹${S.logData.totalAmount||0}\nTips: ₹${S.logData.totalTip||0}\n\nENTRIES:\n`;
+  (S.logData.entries||[]).forEach(e=>{body+=`• ${e.service} — ₹${e.amount}${Number(e.tip)>0?' (+₹'+e.tip+' tip)':''} — ${e.paymentMethod} — ${e.timestamp||''}\n`;});
+  window.open(`mailto:${email}?subject=${encodeURIComponent('Green Salon — '+cfg.bname+' — '+S.sel.name+' — '+dt)}&body=${encodeURIComponent(body)}`);
+  toast('Email client opened ✓');
+}
+
+// ── NAV ────────────────────────────────────────────────
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function switchTab(t){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(t==='add'){
+    if(S.sel)openSvcForm();else show('s-grid');
+    document.getElementById('ni-add').classList.add('on');
+  }else{
+    show('s-log');document.getElementById('ni-log').classList.add('on');
+    if(S.sel)loadLog();
+  }
+}
+
+// ── HELPERS ────────────────────────────────────────────
+function esc(s){const d=document.createElement('div');d.textContent=String(s??'');return d.innerHTML;}
+function toast(msg,isErr){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast show'+(isErr?' err':'');
+  setTimeout(()=>t.className='toast',2800);
+}
+
+// ── OVERLAY HELPERS ───────────────────────────────────
+function showSaving(msg='Saving...'){
+  const ov=document.getElementById('save-overlay');
+  const sm=document.getElementById('save-msg');
+  const ss=document.getElementById('save-sub');
+  if(sm)sm.textContent=msg;
+  if(ss)ss.textContent='Please wait — sending to Google Sheet';
+  if(ov){ov.style.display='flex';ov.style.flexDirection='column';ov.style.alignItems='center';ov.style.justifyContent='center';}
+}
+function hideSaving(){
+  const ov=document.getElementById('save-overlay');
+  if(ov)ov.style.display='none';
+}
+
+// ── REFRESH ───────────────────────────────────────────
+function doRefresh(){
+  const btn=document.getElementById('btn-refresh');
+  if(btn){btn.style.transform='rotate(360deg)';btn.style.transition='transform .5s';setTimeout(()=>{btn.style.transform='';btn.style.transition='';},500);}
+  // Reload data based on current screen
+  loadStaff();loadSummary();
+  const pg=document.querySelector('.scr.on')?.id;
+  if(pg==='s-log'&&S.sel) loadLog();
+  toast('Refreshed ✓');
+}
+
+// ── LOGOUT ────────────────────────────────────────────
+function doLogout(){
+  if(!confirm('Exit staff session? Tablet will return to home screen.')) return;
+  S.sel=null;S.logData=null;
+  document.getElementById('bnav').classList.remove('vis');
+  show('s-grid');
+  loadStaff();loadSummary();
+  toast('Returned to home');
+}
+
+// ── PWA ────────────────────────────────────────────────
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  if(!window.matchMedia('(display-mode: standalone)').matches){
+    const b=document.getElementById('install-banner');if(b)b.style.display='flex';
+  }
+});
+window.addEventListener('appinstalled',()=>{
+  const b=document.getElementById('install-banner');if(b)b.style.display='none';
+  deferredPrompt=null;toast('App installed ✓');
+});
+function installPWA(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-banner').style.display='none';});}
+  else alert('iPhone/iPad:\n1. Tap Share in Safari\n2. Tap "Add to Home Screen"\n3. Tap Add\n\nApp opens full screen like a native app.');
+}
+function initPWA(){
+  const manifest={name:"Green Salon",short_name:"Green Salon",description:"Salon billing - v23",start_url:location.pathname,
+    display:"standalone",orientation:"any",background_color:"#08090d",theme_color:"#08090d",
+    icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%2308090d'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='%2322d3a8' font-family='Arial'%3E%E2%9C%82%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:"application/json"});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+  if('serviceWorker' in navigator){
+    const sw=`const C='gs-v23';self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==C).map(n=>caches.delete(n)))));self.clients.claim();});self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||e.request.url.includes('script.google.com'))return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{if(resp.ok){const rc=resp.clone();caches.open(C).then(c=>c.put(e.request,rc));}return resp;}).catch(()=>caches.match(e.request))));});`;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+  }
+}
+window.addEventListener('load',initPWA);
+</script>
+</body>
+</html>
